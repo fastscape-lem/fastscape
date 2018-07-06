@@ -1,6 +1,6 @@
 # FastScape
 
-A fast, versatile, extensible and user-friendly Landscape Evolution Model (LEM).
+A fast, versatile and user-friendly Landscape Evolution Model (LEM).
 
 **This project is currently under heavy development.**
 
