@@ -6,21 +6,15 @@ from .main_drivers import SurfaceTopography
 
 
 @xs.process
-class BaseTectonicUplift(object):
-    """Base class for tectonic vertical uplift.
+class BlockUplift(object):
+    """Vertical block uplift as external forcing."""
 
-    This class should be sub-classed.
-    """
+    rate = xs.variable(dims=[(), ('y', 'x')], description='uplift rate')
+    active_nodes = xs.foreign(ClosedBoundaryFaces, 'active_nodes', intent='in')
+
     uplift = xs.variable(dims=[(), ('y', 'x')], intent='out',
                          group='elevation_up',
                          description='tectonic (vertical) uplift')
-
-
-@xs.process
-class BlockUplift(BaseTectonicUplift):
-    """Vertical block uplift as external forcing."""
-    rate = xs.variable(dims=[(), ('y', 'x')], description='uplift rate')
-    active_nodes = xs.foreign(ClosedBoundaryFaces, 'active_nodes', intent='in')
 
     def initialize(self):
         self.uplift = np.zeros_like(self.active_nodes, dtype='d')
@@ -32,7 +26,7 @@ class BlockUplift(BaseTectonicUplift):
 
 @xs.process
 class ApplyTectonicUplift(object):
-    """Compute uplifted surface topography.
+    """Apply tectonic uplift on surface topography.
 
     The main purpose of this process is to compute erosion processes
     based on a surface elevation that has been already uplifted.
@@ -42,9 +36,9 @@ class ApplyTectonicUplift(object):
 
     """
     elevation = xs.foreign(SurfaceTopography, 'elevation')
-    uplift = xs.foreign(BaseTectonicUplift, 'uplift')
+    uplift = xs.foreign(BlockUplift, 'uplift')
 
-    uplifted_elevation = xs.variable(dims=('y', 'x'), intent='out')
+    elevation_uplifted = xs.variable(dims=('y', 'x'), intent='out')
 
     def run_step(self, dt):
-        self.uplifted_elevation = self.elevation + self.uplift * dt
+        self.elevation_uplifted = self.elevation + self.uplift
