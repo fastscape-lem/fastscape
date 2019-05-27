@@ -3,40 +3,17 @@ import xsimlab as xs
 
 
 @xs.process
-class UniformGrid1D(UniformRectilinearGrid):
-    """Create a uniform (static) 1-dimensional grid."""
-
-    size = xs.variable(description='nb. of grid nodes')
-    spacing = xs.variable(description='grid node spacing')
-    origin = xs.variable(description='x coordinate of grid origin')
-
-    length = xs.variable(intent='out', description='total grid length')
-    x = xs.variable(dims='x', intent='out', description='grid x coordinate')
-
-    dx = xs.variable(intent='out', description="alias of spacing")
-    nx = xs.variable(intent='out', description="alias of size")
-
-    def initialize(self):
-        self.length = (self.size - 1) * self.spacing
-
-        self.dx = self.spacing
-        self.nx = self.size
-
-        self.x = np.linspace(self.origin, self.length, self.shape)
-
-
-@xs.process
 class UniformRectilinearGrid2D(object):
     """Create a uniform rectilinear (static) 2-dimensional grid."""
 
-    shape = xs.variable(dims='grid_shape',
+    shape = xs.variable(dims='shape_yx',
                         description='nb. of grid nodes in (y, x)')
-    spacing = xs.variable(dims='grid_shape',
+    spacing = xs.variable(dims='shape_yx',
                           description='grid node spacing in (y, x)')
-    origin = xs.variable(dims='grid_shape',
+    origin = xs.variable(dims='shape_yx',
                          description='(y, x) coordinates of grid origin')
 
-    length = xs.variable(dims='grid_shape', intent='out',
+    length = xs.variable(dims='shape_yx', intent='out',
                          description='total grid length in (y, x)')
 
     size = xs.variable(intent='out', description='total nb. of nodes')
@@ -69,11 +46,15 @@ class UniformRectilinearGrid2D(object):
 class RasterGrid2D(UniformRectilinearGrid2D):
     """Create a raster 2-dimensional grid."""
 
-    resolution = xs.variable(description='fixed grid resolution')
+    length = xs.variable(dims='shape_yx', intent='inout',
+                         description='total grid length in (y, x)')
 
-    spacing = xs.variable(dims='grid_shape', intent='out',
+    origin = xs.variable(dims='shape_yx', intent='out',
+                         description='(y, x) coordinates of grid origin')
+    spacing = xs.variable(dims='shape_yx', intent='out',
                           description='grid node spacing in (y, x)')
 
     def initialize(self):
-        self.spacing = np.array([self.resolution, self.resolution])
+        self.origin = np.array([0., 0.])
+        self.spacing = self.length / (self.shape - 1)
         super(RasterGrid2D, self).initialize()
