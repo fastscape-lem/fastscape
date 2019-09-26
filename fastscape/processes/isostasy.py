@@ -33,6 +33,7 @@ class LocalIsostasyErosion(BaseLocalIsostasy):
 
     erosion = xs.foreign(TotalErosion, 'erosion')
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         self.isostasy = self.i_coef * self.erosion
 
@@ -43,6 +44,7 @@ class LocalIsostasyUplift(BaseLocalIsostasy):
 
     uplift = xs.foreign(BlockUplift, 'uplift')
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         self.isostasy = -1. * self.i_coef * self.uplift
 
@@ -54,5 +56,6 @@ class LocalIsostasyErosionUplift(BaseLocalIsostasy):
     erosion = xs.foreign(TotalErosion, 'erosion')
     uplift = xs.foreign(BlockUplift, 'uplift')
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         self.isostasy = self.i_coef * (self.erosion - self.rock_uplift)

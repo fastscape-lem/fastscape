@@ -14,7 +14,7 @@ class SurfaceTopography(object):
     elevation_up_vars = xs.group('elevation_up')
     elevation_down_vars = xs.group('elevation_down')
 
-    def run_step(self, *args):
+    def run_step(self):
         elevation_up = np.sum((v for v in self.elevation_up_vars))
         elevation_down = np.sum((v for v in self.elevation_down_vars))
         self.elevation_change = elevation_up - elevation_down
@@ -32,6 +32,6 @@ class TotalErosion(object):
                           description='total erosion',
                           group='elevation_down')
 
-    def run_step(self, *args):
+    def run_step(self):
         self.erosion = np.sum((err for err in self.erosion_vars))
         self.cumulative_erosion += self.erosion

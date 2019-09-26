@@ -25,13 +25,13 @@ class StreamPowerChannel(object):
     chi = xs.on_demand(('y', 'x'),
                        description='integrated drainage area (chi)')
 
-    # TODO: remove when those variables will be computed in FlowRouter
+    # TODO: remove when those variables will really be computed in FlowRouter
     drainage_area = xs.foreign(FlowRouter, 'drainage_area')
 
     # ---
     # Insane hack to bypass xarray-simlab so that we can declare
     # output variables in FlowRouter process and set their value here
-    # (fastscapelib-fortran does all the routing with the
+    # (fastscapelib-fortran does all the routing within the
     # streampowerlaw function)
     # ---
 
@@ -67,6 +67,7 @@ class StreamPowerChannel(object):
         self.fs_context.g = 0.
         self.fs_context.gsed = -1.
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         self.fs_context.p = self._get_from_store(self._mfd_key)
 
@@ -80,6 +81,9 @@ class StreamPowerChannel(object):
         self.fs_context.n = self.slope_exp
 
         # fs.streampowerlaw() updates elevation in-place: not desired here
+        # TODO: uplift is applied within the streampowerlaw() function
+        #   -> temporarily reset u to zero in context
+        #   -> set h in context from self.elevation
         elevation = self.fs_context.h.copy()
 
         fs.streampowerlaw()

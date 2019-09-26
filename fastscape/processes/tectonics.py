@@ -34,6 +34,7 @@ class BlockUplift(object):
             if status == 'fixed_value':
                 self._mask[border] = 0.
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         rate = np.broadcast_to(self.rate, self.shape) * self._mask
         self.fs_context.u = rate.ravel()

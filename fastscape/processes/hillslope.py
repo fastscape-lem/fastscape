@@ -18,6 +18,7 @@ class LinearDiffusion(object):
     elevation = xs.foreign(SurfaceTopography, 'elevation')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         kd = np.broadcast_to(self.diffusivity, self.shape).flatten()
         self.fs_context.kd = kd
@@ -50,6 +51,7 @@ class DiffusivityBedrockSoil(object):
     shape = xs.foreign(RasterGrid2D, 'shape')
     diffusivity = xs.foreign(LinearDiffusion, 'diffusivity', intent='out')
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         # TODO: get soil thickness (surface - bedrock)
         self.diffusivity = np.broadcast_to(self.bedrock, self.shape)

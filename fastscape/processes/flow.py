@@ -23,6 +23,7 @@ class FlowSurface(object):
         description='surface elevation before flow'
     )
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         self.elevation = self.topo_elevation
 
@@ -35,6 +36,7 @@ class UpliftedFlowSurface(FlowSurface):
     """
     uplift = xs.foreign(BlockUplift, 'uplift')
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         self.elevation = self.topo_elevation + self.uplift
 

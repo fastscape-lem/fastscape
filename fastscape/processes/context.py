@@ -33,6 +33,7 @@ class FastscapelibContext(object):
 
         self.context.h = self.elevation.flatten()
 
+    @xs.runtime(args='step_delta')
     def run_step(self, dt):
         self.context.dt = dt
         self.context.h = self.elevation.flatten()

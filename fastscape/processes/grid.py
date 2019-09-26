@@ -28,8 +28,11 @@ class UniformRectilinearGrid2D(object):
     x = xs.variable(dims='x', intent='out', description='grid x coordinate')
     y = xs.variable(dims='y', intent='out', description='grid y coordinate')
 
-    def initialize(self):
+    def _set_length_or_spacing(self):
         self.length = (self.shape - 1) * self.spacing
+
+    def initialize(self):
+        self._set_length_or_spacing()
         self.size = np.prod(self.shape)
         self.cell_area = np.prod(self.spacing)
 
@@ -46,7 +49,7 @@ class UniformRectilinearGrid2D(object):
 class RasterGrid2D(UniformRectilinearGrid2D):
     """Create a raster 2-dimensional grid."""
 
-    length = xs.variable(dims='shape_yx', intent='inout',
+    length = xs.variable(dims='shape_yx', intent='in',
                          description='total grid length in (y, x)')
 
     origin = xs.variable(dims='shape_yx', intent='out',
@@ -54,7 +57,9 @@ class RasterGrid2D(UniformRectilinearGrid2D):
     spacing = xs.variable(dims='shape_yx', intent='out',
                           description='grid node spacing in (y, x)')
 
+    def _set_length_or_spacing(self):
+        self.spacing = self.length / (self.shape - 1)
+
     def initialize(self):
         self.origin = np.array([0., 0.])
-        self.spacing = self.length / (self.shape - 1)
         super(RasterGrid2D, self).initialize()
