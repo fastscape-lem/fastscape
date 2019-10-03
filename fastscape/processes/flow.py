@@ -69,13 +69,33 @@ class FlowRouter:
         intent='out',
         description='DFS ordered grid node indices'
     )
+    nb_receivers = xs.variable(
+        dims='node',
+        intent='out',
+        description='number of flow receivers'
+    )
+    receivers = xs.variable(
+        dims=['node', ('node', 'nb_rec_max')],
+        intent='out',
+        description='flow receiver node indices'
+    )
+    lengths = xs.variable(
+        dims=['node', ('node', 'nb_rec_max')],
+        intent='out',
+        description='out flow path length'
+    )
+    weights = xs.variable(
+        dims=['node', ('node', 'nb_rec_max')],
+        intent='out',
+        description='flow partition weights'
+    )
     nb_donors = xs.variable(
         dims='node',
         intent='out',
         description='number of flow donors'
     )
     donors = xs.variable(
-        dims=('node', 'c8'),
+        dims=('node', 'nb_don_max'),
         intent='out',
         description='flow donors node indices'
     )
@@ -87,10 +107,6 @@ class FlowRouter:
     lake_depth = xs.on_demand(
         dims=('y', 'x'),
         description='lake depth'
-    )
-    water_height = xs.on_demand(
-        dims=('y', 'x'),
-        description='elevation of surface water'
     )
 
     def initialize(self):
@@ -127,25 +143,11 @@ class FlowRouter:
     def _lake_depth(self):
         return self.fs_context.lake_depth.reshape(self.shape).copy()
 
-    @water_height.compute
-    def _water_height(self):
-        return self.fs_context.hwater.reshape(self.shape).copy()
-
 
 @xs.process
 class SingleFlowRouter(FlowRouter):
     """Single (convergent) flow router."""
 
-    receiver = xs.variable(
-        dims='node',
-        intent='out',
-        description='flow receiver node index'
-    )
-    length = xs.variable(
-        dims='node',
-        intent='out',
-        description='out flow path length'
-    )
     slope = xs.on_demand(
         dims='node',
         description='out flow path slope'
@@ -155,8 +157,10 @@ class SingleFlowRouter(FlowRouter):
         super(SingleFlowRouter, self).initialize()
 
         # views
+        self.nb_receivers = np.ones_like(self.fs_context.rec)[:, None]
         self.receivers = self.fs_context.rec
-        self.length = self.fs_context.length
+        self.lengths = self.fs_context.length
+        self.weights = np.ones_like(self.fs_context.length)[:, None]
 
         self.single_flow = True
 
@@ -176,31 +180,11 @@ class MultipleFlowRouter(FlowRouter):
     """
     slope_exp = xs.variable(description='MFD partioner slope exponent')
 
-    nb_receivers = xs.variable(
-        dims='node',
-        intent='out',
-        description='number of flow receivers'
-    )
-    receivers = xs.variable(
-        dims=('node', 'c8'),
-        intent='out',
-        description='flow receiver node indices'
-    )
-    lengths = xs.variable(
-        dims=('node', 'c8'),
-        intent='out',
-        description='out flow path length'
-    )
-    weights = xs.variable(
-        dims=('node', 'c8'),
-        intent='out',
-        description='flow partition weights'
-    )
-
     def initialize(self):
         super(MultipleFlowRouter, self).initialize()
 
         # views
+        self.stack = self.fs_context.mstack
         self.nb_receivers = self.fs_context.mnrec
         self.receivers = self.fs_context.mrec
         self.lengths = self.fs_context.mlrec
