@@ -8,7 +8,7 @@ from .surface import SurfaceTopography
 
 
 @xs.process
-class LinearDiffusion(object):
+class LinearDiffusion:
     """Hillslope erosion by diffusion."""
 
     diffusivity = xs.variable(dims=[(), ('y', 'x')], description='diffusivity')
@@ -39,7 +39,7 @@ class LinearDiffusion(object):
 
 
 @xs.process
-class DiffusivityBedrockSoil(object):
+class DiffusivityBedrockSoil:
     """Use a different diffusivity value whether or
     not bedrock is covered by a soil layer.
 

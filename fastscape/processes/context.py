@@ -7,7 +7,7 @@ from .surface import SurfaceTopography
 
 
 @xs.process
-class FastscapelibContext(object):
+class FastscapelibContext:
     """This process takes care of proper initialization,
     update and clean-up of fastscapelib-fortran internal
     state.

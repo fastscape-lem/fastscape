@@ -6,7 +6,7 @@ from .surface import SurfaceTopography, TotalErosion
 
 
 @xs.process
-class FlatSurface(object):
+class FlatSurface:
     shape = xs.foreign(RasterGrid2D, 'shape')
     elevation = xs.foreign(SurfaceTopography, 'elevation', intent='out')
 
@@ -15,7 +15,7 @@ class FlatSurface(object):
 
 
 @xs.process
-class NoErosionHistory(object):
+class NoErosionHistory:
     erosion = xs.foreign(TotalErosion, 'cumulative_erosion', intent='out')
 
     def initialize(self):

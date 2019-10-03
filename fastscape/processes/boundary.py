@@ -5,7 +5,7 @@ from .context import FastscapelibContext
 
 
 @xs.process
-class BorderBoundary(object):
+class BorderBoundary:
     status = xs.variable([(), 'border'], description='node status at borders')
 
     border = xs.variable('border', intent='out')

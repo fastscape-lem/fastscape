@@ -3,7 +3,7 @@ import xsimlab as xs
 
 
 @xs.process
-class SurfaceTopography(object):
+class SurfaceTopography:
     """Update a surface topography as resulting from
     multiple processes either rising or lowering elevation.
 
@@ -24,7 +24,7 @@ class SurfaceTopography(object):
 
 
 @xs.process
-class TotalErosion(object):
+class TotalErosion:
     """Combine (sum) all erosion processes."""
     erosion_vars = xs.group('erosion')
     cumulative_erosion = xs.variable(dims=[(), ('y', 'x')], intent='inout')

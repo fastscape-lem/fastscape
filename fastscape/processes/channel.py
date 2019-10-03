@@ -8,59 +8,40 @@ from .grid import RasterGrid2D
 
 
 @xs.process
-class StreamPowerChannel(object):
+class StreamPowerChannel:
     """Channel erosion computed using the Stream-Power Law."""
 
-    k_coef = xs.variable([(), ('y', 'x')],
-                         description='stream-power coefficient')
+    k_coef = xs.variable(
+        dims=[(), ('y', 'x')],
+        description='stream-power coefficient'
+    )
     area_exp = xs.variable(description='drainage area exponent')
     slope_exp = xs.variable(description='slope exponent')
 
     shape = xs.foreign(RasterGrid2D, 'shape')
     elevation = xs.foreign(FlowRouter, 'elevation')
+    single_flow = xs.foreign(FlowRouter, 'single_flow')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
     erosion = xs.variable(dims=('y', 'x'), intent='out', group='erosion')
 
-    chi = xs.on_demand(('y', 'x'),
-                       description='integrated drainage area (chi)')
+    chi = xs.on_demand(
+        dims=('y', 'x'),
+        description='integrated drainage area (chi)'
+    )
 
-    # TODO: remove when those variables will really be computed in FlowRouter
-    drainage_area = xs.foreign(FlowRouter, 'drainage_area')
-
-    # ---
-    # Insane hack to bypass xarray-simlab so that we can declare
-    # output variables in FlowRouter process and set their value here
-    # (fastscapelib-fortran does all the routing within the
-    # streampowerlaw function)
-    # ---
-
-    def _get_store_key(self, varname):
-        for k, p in self.__xsimlab_model__.items():
-            skeys = p.__xsimlab_store_keys__
-
-            if varname in skeys:
-                v = skeys[varname]
-
-                if v[0] == k:
-                    return (k, varname)
-
-        return None
-
-    def _get_from_store(self, key):
-        return self.__xsimlab_store__.get(key)
-
-    def _set_in_store(self, key, value):
-        if key is not None:
-            self.__xsimlab_store__[key] = value
-
-    # ---
-    # End of the hack
-    # ---
+    # TODO: move drainage area to a separate process
+    # see https://github.com/fastscape-lem/fastscapelib-fortran/issues/24
+    drainage_area = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='drainage area'
+    )
 
     def initialize(self):
-        self._mfd_key = self._get_store_key('mfd_exp')
-        self._area_key = self._get_store_key('drainage_area')
+        # TODO: move
+        pass
+        self.drainage_area = self.fs_context.a.reshape(self.shape)
 
     def _set_g_in_context(self):
         # transport/deposition feature is exposed in subclasses
@@ -69,8 +50,6 @@ class StreamPowerChannel(object):
 
     @xs.runtime(args='step_delta')
     def run_step(self, dt):
-        self.fs_context.p = self._get_from_store(self._mfd_key)
-
         kf = np.broadcast_to(self.k_coef, self.shape).flatten()
         self.fs_context.kf = kf
 
@@ -80,22 +59,20 @@ class StreamPowerChannel(object):
         self.fs_context.m = self.area_exp
         self.fs_context.n = self.slope_exp
 
-        # fs.streampowerlaw() updates elevation in-place: not desired here
-        # TODO: uplift is applied within the streampowerlaw() function
-        #   -> temporarily reset u to zero in context
-        #   -> set h in context from self.elevation
-        elevation = self.fs_context.h.copy()
+        # bypass fastscapelib_fortran global state
+        h_bak = self.fs_context.h.copy()
+        self.fs_context.h = self.elevation.flatten()
 
-        fs.streampowerlaw()
+        if self.single_flow:
+            fs.streampowerlawsingleflowdirection()
+        else:
+            fs.streampowerlaw()
 
-        erosion_flat = elevation - self.fs_context.h
+        erosion_flat = self.elevation.ravel() - self.fs_context.h
         self.erosion = erosion_flat.reshape(self.shape)
 
-        self.fs_context.h = elevation
-
-        # hack! update values of flow routing variables
-        self._set_in_store(self._area_key,
-                           self.fs_context.a.reshape(self.shape))
+        # restore fastscapelib_fortran global state
+        self.fs_context.h = h_bak
 
     @chi.compute
     def _chi(self):

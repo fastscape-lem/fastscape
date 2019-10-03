@@ -7,7 +7,27 @@ from .grid import RasterGrid2D
 
 
 @xs.process
-class BlockUplift(object):
+class BaseVerticalUplift:
+    """Base class for vertical uplift forcing.
+
+    Do not use this base class directly in a model! Use one of its
+    subclasses instead.
+
+    However, if you need the 'uplift' variable declared here
+    in another process, it is preferable to pass this base class in
+    :func:`xsimlab.foreign`.
+
+    """
+    uplift = xs.variable(
+        dims=[(), ('y', 'x')],
+        intent='out',
+        group='elevation_up',
+        description='imposed vertical uplift'
+    )
+
+
+@xs.process
+class BlockUplift(BaseVerticalUplift):
     """Vertical tectonic uplift.
 
     Automatically resets uplift to zero at grid borders where
@@ -19,9 +39,6 @@ class BlockUplift(object):
     shape = xs.foreign(RasterGrid2D, 'shape')
     status = xs.foreign(BorderBoundary, 'border_status')
     fs_context = xs.foreign(FastscapelibContext, 'context')
-
-    uplift = xs.variable(dims=[(), ('y', 'x')], intent='out',
-                         group='elevation_up')
 
     def initialize(self):
         # build uplift rate binary mask according to border status

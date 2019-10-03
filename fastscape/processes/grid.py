@@ -3,7 +3,7 @@ import xsimlab as xs
 
 
 @xs.process
-class UniformRectilinearGrid2D(object):
+class UniformRectilinearGrid2D:
     """Create a uniform rectilinear (static) 2-dimensional grid."""
 
     shape = xs.variable(dims='shape_yx',

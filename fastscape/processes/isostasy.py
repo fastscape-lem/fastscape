@@ -5,7 +5,7 @@ from .tectonics import BlockUplift
 
 
 @xs.process
-class BaseIsostasy(object):
+class BaseIsostasy:
     """Base class for isostasy.
 
     It only defines the variable ``isostaty`` and should be

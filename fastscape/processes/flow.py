@@ -1,14 +1,15 @@
+import fastscapelib_fortran as fs
 import numpy as np
 import xsimlab as xs
 
 from .context import FastscapelibContext
 from .grid import RasterGrid2D
 from .surface import SurfaceTopography
-from .tectonics import BlockUplift
+from .tectonics import BaseVerticalUplift
 
 
 @xs.process
-class FlowSurface(object):
+class FlowSurface:
     """Defines the surface on which to apply flow routing
     and all dependent processes.
 
@@ -19,7 +20,8 @@ class FlowSurface(object):
     topo_elevation = xs.foreign(SurfaceTopography, 'elevation')
 
     elevation = xs.variable(
-        ('y', 'x'), intent='out',
+        dims=('y', 'x'),
+        intent='out',
         description='surface elevation before flow'
     )
 
@@ -34,7 +36,7 @@ class UpliftedFlowSurface(FlowSurface):
     uplifted topographic surface.
 
     """
-    uplift = xs.foreign(BlockUplift, 'uplift')
+    uplift = xs.foreign(BaseVerticalUplift, 'uplift')
 
     @xs.runtime(args='step_delta')
     def run_step(self, dt):
@@ -42,25 +44,77 @@ class UpliftedFlowSurface(FlowSurface):
 
 
 @xs.process
-class FlowRouter(object):
-    """Route flow at the topographic surface."""
+class FlowRouter:
+    """Base process class to route flow on the topographic surface.
 
-    mfd_exp = xs.variable(description='MFD slope exponent')
+    Do not use this base class directly in a model! Use one of its
+    subclasses instead.
 
+    However, if you need one or several of the variables declared here
+    in another process, it is preferable to pass this base class in
+    :func:`xsimlab.foreign`.
+
+    """
     shape = xs.foreign(RasterGrid2D, 'shape')
     elevation = xs.foreign(FlowSurface, 'elevation')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
-    # this is insane! drainage area is further computed
-    # in StreamPowerChannelErosion but we do this to avoid
-    # later API breaking changes
-    drainage_area = xs.variable(('y', 'x'), intent='out',
-                                description='drainage area')
+    single_flow = xs.variable(
+        intent='out',
+        description='flag for single flow routing'
+    )
 
-    # those variables won't return meaningful value
-    # if called before StreamPowerChannel run_step!!
-    basin = xs.on_demand(('y', 'x'), description='river catchments')
-    lake_depth = xs.on_demand(('y', 'x'), description='lake depth')
+    stack = xs.variable(
+        dims='node',
+        intent='out',
+        description='DFS ordered grid node indices'
+    )
+    nb_donors = xs.variable(
+        dims='node',
+        intent='out',
+        description='number of flow donors'
+    )
+    donors = xs.variable(
+        dims=('node', 'c8'),
+        intent='out',
+        description='flow donors node indices'
+    )
+
+    basin = xs.on_demand(
+        dims=('y', 'x'),
+        description='river catchments'
+    )
+    lake_depth = xs.on_demand(
+        dims=('y', 'x'),
+        description='lake depth'
+    )
+    water_height = xs.on_demand(
+        dims=('y', 'x'),
+        description='elevation of surface water'
+    )
+
+    def initialize(self):
+        # views
+        self.stack = self.fs_context.stack
+        self.nb_donors = self.fs_context.ndon
+        self.donors = self.fs_context.don
+
+        # must be defined in sub-classes
+        self.single_flow = None
+
+    def route_flow(self):
+        # must be implemented in sub-classes
+        pass
+
+    def run_step(self):
+        # bypass fastscapelib_fortran global state
+        h_bak = self.fs_context.h.copy()
+        self.fs_context.h = self.elevation.ravel()
+
+        self.route_flow()
+
+        # restore fastscapelib_fortran global state
+        self.fs_context.h = h_bak
 
     @basin.compute
     def _basin(self):
@@ -73,16 +127,45 @@ class FlowRouter(object):
     def _lake_depth(self):
         return self.fs_context.lake_depth.reshape(self.shape).copy()
 
+    @water_height.compute
+    def _water_height(self):
+        return self.fs_context.hwater.reshape(self.shape).copy()
+
 
 @xs.process
 class SingleFlowRouter(FlowRouter):
     """Single (convergent) flow router."""
 
-    mfd_exp = xs.variable(intent='out')
+    receiver = xs.variable(
+        dims='node',
+        intent='out',
+        description='flow receiver node index'
+    )
+    length = xs.variable(
+        dims='node',
+        intent='out',
+        description='out flow path length'
+    )
+    slope = xs.on_demand(
+        dims='node',
+        description='out flow path slope'
+    )
 
     def initialize(self):
-        # high mfd slope exponent value -> mimics convergent flow.
-        self.mfd_exp = 10.
+        super(SingleFlowRouter, self).initialize()
+
+        # views
+        self.receivers = self.fs_context.rec
+        self.length = self.fs_context.length
+
+        self.single_flow = True
+
+    def route_flow(self):
+        fs.flowroutingsingleflowdirection()
+
+    @slope.compute
+    def _slope(self):
+        return (self.elevation - self.elevation[self.receivers]) / self.length
 
 
 @xs.process
@@ -93,22 +176,53 @@ class MultipleFlowRouter(FlowRouter):
     """
     slope_exp = xs.variable(description='MFD partioner slope exponent')
 
-    mfd_exp = xs.variable(intent='out')
+    nb_receivers = xs.variable(
+        dims='node',
+        intent='out',
+        description='number of flow receivers'
+    )
+    receivers = xs.variable(
+        dims=('node', 'c8'),
+        intent='out',
+        description='flow receiver node indices'
+    )
+    lengths = xs.variable(
+        dims=('node', 'c8'),
+        intent='out',
+        description='out flow path length'
+    )
+    weights = xs.variable(
+        dims=('node', 'c8'),
+        intent='out',
+        description='flow partition weights'
+    )
 
     def initialize(self):
-        self.mfd_exp = self.slope_exp
+        super(MultipleFlowRouter, self).initialize()
+
+        # views
+        self.nb_receivers = self.fs_context.mnrec
+        self.receivers = self.fs_context.mrec
+        self.lengths = self.fs_context.mlrec
+        self.weights = self.fs_context.mwrec
+
+        self.single_flow = False
+        self.fs_context.p = self.slope_exp
+
+    def route_flow(self):
+        fs.flowrouting()
 
 
 @xs.process
-class MixedFlowRouter(FlowRouter):
+class MixedFlowRouter(MultipleFlowRouter):
     """Multiple (convergent/divergent) flow router where the
     slope exponent is itself a function of slope.
 
     slope_exp = 0.5 + 0.6 * slope
 
     """
-    mfd_exp = xs.variable(intent='out')
-
     def initialize(self):
+        super(MixedFlowRouter, self).initialize()
+
         # this is defined like that in fastscapelib-fortran
-        self.mfd_exp = -1.
+        self.fs_context.p = -1.
