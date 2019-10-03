@@ -198,7 +198,7 @@ class MultipleFlowRouter(FlowRouter):
 
 
 @xs.process
-class MixedFlowRouter(MultipleFlowRouter):
+class SlopeAdaptiveFlowRouter(MultipleFlowRouter):
     """Multiple (convergent/divergent) flow router where the
     slope exponent is itself a function of slope.
 
@@ -210,3 +210,36 @@ class MixedFlowRouter(MultipleFlowRouter):
 
         # this is defined like that in fastscapelib-fortran
         self.fs_context.p = -1.
+
+
+@xs.process
+class FlowAccumulator:
+
+    runoff = xs.variable(
+        dims=[(), ('y', 'x')],
+        description='surface runoff (source term)'
+    )
+
+    flowacc = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='flow accumulation from up to downstream'
+    )
+
+
+@xs.process
+class DrainageArea(FlowAccumulator):
+
+    # need to re-use runoff for cell area
+    runoff = xs.variable(
+        dims=[(), ('y', 'x')],
+        intent='out',
+        description='alias for cell area'
+    )
+
+    # alias of flowacc, for convenience
+    area = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='drainage area'
+    )
