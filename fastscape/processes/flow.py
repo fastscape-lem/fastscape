@@ -1,3 +1,5 @@
+import warnings
+
 import fastscapelib_fortran as fs
 import numpy as np
 import numba
@@ -137,7 +139,7 @@ class FlowRouter:
 
 @xs.process
 class SingleFlowRouter(FlowRouter):
-    """Single (convergent) flow router."""
+    """Single direction (convergent) flow router."""
 
     slope = xs.on_demand(
         dims='node',
@@ -164,7 +166,7 @@ class SingleFlowRouter(FlowRouter):
 
 @xs.process
 class MultipleFlowRouter(FlowRouter):
-    """Multiple (convergent/divergent) flow router with uniform
+    """Multiple direction (convergent/divergent) flow router with uniform
     slope exponent.
 
     """
@@ -176,7 +178,7 @@ class MultipleFlowRouter(FlowRouter):
     def route_flow(self):
         fs.flowrouting()
 
-        # Fortran 1 vs Python 0 index + maybe transpose
+        # Fortran 1 vs Python 0 index | Fortran col vs Python row layout
         self.stack = self.fs_context.mstack - 1
         self.nb_receivers = self.fs_context.mnrec
         self.receivers = self.fs_context.mrec.transpose() - 1
@@ -186,17 +188,25 @@ class MultipleFlowRouter(FlowRouter):
 
 @xs.process
 class AdaptiveFlowRouter(MultipleFlowRouter):
-    """Multiple (convergent/divergent) flow router where the
+    """Multiple direction (convergent/divergent) flow router where the
     slope exponent is itself a function of slope.
 
     slope_exp = 0.5 + 0.6 * slope
 
     """
-    def initialize(self):
-        super(MixedFlowRouter, self).initialize()
+    slope_exp = xs.on_demand(description='MFD partioner slope exponent')
 
+    def initialize(self):
         # this is defined like that in fastscapelib-fortran
         self.fs_context.p = -1.
+
+    @slope_exp.compute
+    def _slope_exp(self):
+        # see https://github.com/fastscape-lem/fastscapelib-fortran/issues/24
+        warnings.warn("'AdaptiveFlowRouter.slope_exp' "
+                      "has no meaningful value.",
+                      UserWarning)
+        return -1
 
 
 # TODO: remove when possible to use fastscapelib-fortran
