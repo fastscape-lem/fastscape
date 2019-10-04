@@ -8,7 +8,8 @@ from ..processes.flow import (DrainageArea, SingleFlowRouter,
 from ..processes.grid import RasterGrid2D
 from ..processes.hillslope import LinearDiffusion
 from ..processes.initial import FlatSurface, NoErosionHistory
-from ..processes.surface import SurfaceTopography, TotalErosion
+from ..processes.surface import (SurfaceTopography, TerrainDerivatives,
+                                 TotalErosion)
 from ..processes.tectonics import BlockUplift
 
 
@@ -24,6 +25,7 @@ basic_model = xs.Model({
     'diffusion': LinearDiffusion,
     'erosion': TotalErosion,
     'topography': SurfaceTopography,
+    'terrain': TerrainDerivatives,
     'init_topography': FlatSurface,
     'init_erosion': NoErosionHistory
 })
