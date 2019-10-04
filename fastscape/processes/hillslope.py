@@ -3,7 +3,7 @@ import numpy as np
 import xsimlab as xs
 
 from .context import FastscapelibContext
-from .grid import RasterGrid2D
+from .grid import UniformRectilinearGrid2D
 from .surface import SurfaceTopography
 
 
@@ -14,7 +14,7 @@ class LinearDiffusion:
     diffusivity = xs.variable(dims=[(), ('y', 'x')], description='diffusivity')
     erosion = xs.variable(dims=('y', 'x'), intent='out', group='erosion')
 
-    shape = xs.foreign(RasterGrid2D, 'shape')
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     elevation = xs.foreign(SurfaceTopography, 'elevation')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
@@ -48,7 +48,7 @@ class DiffusivityBedrockSoil:
                           description='diffusivity (bedrock)')
     soil = xs.variable(description='diffusivity (soil)')
 
-    shape = xs.foreign(RasterGrid2D, 'shape')
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     diffusivity = xs.foreign(LinearDiffusion, 'diffusivity', intent='out')
 
     @xs.runtime(args='step_delta')

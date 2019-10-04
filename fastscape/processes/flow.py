@@ -1,9 +1,10 @@
 import fastscapelib_fortran as fs
 import numpy as np
+import numba
 import xsimlab as xs
 
 from .context import FastscapelibContext
-from .grid import RasterGrid2D
+from .grid import UniformRectilinearGrid2D
 from .surface import SurfaceTopography
 from .tectonics import BaseVerticalUplift
 
@@ -55,14 +56,9 @@ class FlowRouter:
     :func:`xsimlab.foreign`.
 
     """
-    shape = xs.foreign(RasterGrid2D, 'shape')
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     elevation = xs.foreign(FlowSurface, 'elevation')
     fs_context = xs.foreign(FastscapelibContext, 'context')
-
-    single_flow = xs.variable(
-        intent='out',
-        description='flag for single flow routing'
-    )
 
     stack = xs.variable(
         dims='node',
@@ -109,15 +105,6 @@ class FlowRouter:
         description='lake depth'
     )
 
-    def initialize(self):
-        # views
-        self.stack = self.fs_context.stack
-        self.nb_donors = self.fs_context.ndon
-        self.donors = self.fs_context.don
-
-        # must be defined in sub-classes
-        self.single_flow = None
-
     def route_flow(self):
         # must be implemented in sub-classes
         pass
@@ -128,6 +115,10 @@ class FlowRouter:
         self.fs_context.h = self.elevation.ravel()
 
         self.route_flow()
+
+        self.nb_donors = self.fs_context.ndon
+        # Fortran 1 vs Python 0 index
+        self.donors = self.fs_context.don - 1
 
         # restore fastscapelib_fortran global state
         self.fs_context.h = h_bak
@@ -154,18 +145,17 @@ class SingleFlowRouter(FlowRouter):
     )
 
     def initialize(self):
-        super(SingleFlowRouter, self).initialize()
-
-        # views
-        self.nb_receivers = np.ones_like(self.fs_context.rec)[:, None]
-        self.receivers = self.fs_context.rec
-        self.lengths = self.fs_context.length
-        self.weights = np.ones_like(self.fs_context.length)[:, None]
-
-        self.single_flow = True
+        # for compatibility
+        self.nb_receivers = np.ones_like(self.fs_context.rec)
+        self.weights = np.ones_like(self.fs_context.length)
 
     def route_flow(self):
         fs.flowroutingsingleflowdirection()
+
+        # Fortran 1 vs Python 0 index
+        self.stack = self.fs_context.stack - 1
+        self.receivers = self.fs_context.rec - 1
+        self.lengths = self.fs_context.length
 
     @slope.compute
     def _slope(self):
@@ -181,24 +171,21 @@ class MultipleFlowRouter(FlowRouter):
     slope_exp = xs.variable(description='MFD partioner slope exponent')
 
     def initialize(self):
-        super(MultipleFlowRouter, self).initialize()
-
-        # views
-        self.stack = self.fs_context.mstack
-        self.nb_receivers = self.fs_context.mnrec
-        self.receivers = self.fs_context.mrec
-        self.lengths = self.fs_context.mlrec
-        self.weights = self.fs_context.mwrec
-
-        self.single_flow = False
         self.fs_context.p = self.slope_exp
 
     def route_flow(self):
         fs.flowrouting()
 
+        # Fortran 1 vs Python 0 index + maybe transpose
+        self.stack = self.fs_context.mstack - 1
+        self.nb_receivers = self.fs_context.mnrec
+        self.receivers = self.fs_context.mrec.transpose() - 1
+        self.lengths = self.fs_context.mlrec.transpose()
+        self.weights = self.fs_context.mwrec.transpose()
+
 
 @xs.process
-class SlopeAdaptiveFlowRouter(MultipleFlowRouter):
+class AdaptiveFlowRouter(MultipleFlowRouter):
     """Multiple (convergent/divergent) flow router where the
     slope exponent is itself a function of slope.
 
@@ -212,13 +199,41 @@ class SlopeAdaptiveFlowRouter(MultipleFlowRouter):
         self.fs_context.p = -1.
 
 
+# TODO: remove when possible to use fastscapelib-fortran
+# see https://github.com/fastscape-lem/fastscapelib-fortran/issues/24
+@numba.njit
+def _flow_accumulate_sd(field, stack, receivers):
+    for inode in stack[-1::-1]:
+        if receivers[inode] != inode:
+            field[receivers[inode]] += field[inode]
+
+
+@numba.njit
+def _flow_accumulate_mfd(field, stack, nb_receivers, receivers, weights):
+    for inode in stack:
+        if nb_receivers[inode] == 1 and receivers[inode, 0] == inode:
+            continue
+
+        for k in range(nb_receivers[inode]):
+            irec = receivers[inode, k]
+            field[irec] += field[inode] * weights[inode, k]
+
+
 @xs.process
 class FlowAccumulator:
+    """Accumulate the flow from upstream to downstream."""
 
     runoff = xs.variable(
         dims=[(), ('y', 'x')],
-        description='surface runoff (source term)'
+        description='surface runoff (source term) per area unit'
     )
+
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
+    cell_area = xs.foreign(UniformRectilinearGrid2D, 'cell_area')
+    stack = xs.foreign(FlowRouter, 'stack')
+    nb_receivers = xs.foreign(FlowRouter, 'nb_receivers')
+    receivers = xs.foreign(FlowRouter, 'receivers')
+    weights = xs.foreign(FlowRouter, 'weights')
 
     flowacc = xs.variable(
         dims=('y', 'x'),
@@ -226,16 +241,27 @@ class FlowAccumulator:
         description='flow accumulation from up to downstream'
     )
 
+    def run_step(self):
+        field = np.broadcast_to(
+            self.runoff * self.cell_area,
+            self.shape
+        ).flatten()
+
+        if self.receivers.ndim == 1:
+            _flow_accumulate_sd(field, self.stack, self.receivers)
+
+        else:
+            _flow_accumulate_mfd(field, self.stack, self.nb_receivers,
+                                 self.receivers, self.weights)
+
+        self.flowacc = field.reshape(self.shape)
+
 
 @xs.process
 class DrainageArea(FlowAccumulator):
+    """Upstream contributing area."""
 
-    # need to re-use runoff for cell area
-    runoff = xs.variable(
-        dims=[(), ('y', 'x')],
-        intent='out',
-        description='alias for cell area'
-    )
+    runoff = xs.variable(dims=[(), ('y', 'x')], intent='out')
 
     # alias of flowacc, for convenience
     area = xs.variable(
@@ -243,3 +269,11 @@ class DrainageArea(FlowAccumulator):
         intent='out',
         description='drainage area'
     )
+
+    def initialize(self):
+        self.runoff = 1
+
+    def run_step(self):
+        super(DrainageArea, self).run_step()
+
+        self.area = self.flowacc

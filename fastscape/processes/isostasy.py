@@ -1,7 +1,7 @@
 import xsimlab as xs
 
 from .main_drivers import TotalErosion
-from .tectonics import BlockUplift
+from .tectonics import BaseVerticalUplift
 
 
 @xs.process
@@ -42,7 +42,7 @@ class LocalIsostasyErosion(BaseLocalIsostasy):
 class LocalIsostasyUplift(BaseLocalIsostasy):
     """Local isostasic effect of rock uplift."""
 
-    uplift = xs.foreign(BlockUplift, 'uplift')
+    uplift = xs.foreign(BaseVerticalUplift, 'uplift')
 
     @xs.runtime(args='step_delta')
     def run_step(self, dt):
@@ -54,7 +54,7 @@ class LocalIsostasyErosionUplift(BaseLocalIsostasy):
     """Local isostatic effect of both erosion and tectonic uplift."""
 
     erosion = xs.foreign(TotalErosion, 'erosion')
-    uplift = xs.foreign(BlockUplift, 'uplift')
+    uplift = xs.foreign(BaseVerticalUplift, 'uplift')
 
     @xs.runtime(args='step_delta')
     def run_step(self, dt):

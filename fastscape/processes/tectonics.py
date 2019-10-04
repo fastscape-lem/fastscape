@@ -3,7 +3,7 @@ import xsimlab as xs
 
 from .boundary import BorderBoundary
 from .context import FastscapelibContext
-from .grid import RasterGrid2D
+from .grid import UniformRectilinearGrid2D
 
 
 @xs.process
@@ -36,7 +36,7 @@ class BlockUplift(BaseVerticalUplift):
     """
     rate = xs.variable(dims=[(), ('y', 'x')], description='uplift rate')
 
-    shape = xs.foreign(RasterGrid2D, 'shape')
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     status = xs.foreign(BorderBoundary, 'border_status')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 

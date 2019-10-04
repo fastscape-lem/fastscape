@@ -3,8 +3,8 @@ import numpy as np
 import xsimlab as xs
 
 from .context import FastscapelibContext
-from .flow import FlowRouter
-from .grid import RasterGrid2D
+from .flow import FlowAccumulator, FlowRouter
+from .grid import UniformRectilinearGrid2D
 
 
 @xs.process
@@ -18,9 +18,10 @@ class StreamPowerChannel:
     area_exp = xs.variable(description='drainage area exponent')
     slope_exp = xs.variable(description='slope exponent')
 
-    shape = xs.foreign(RasterGrid2D, 'shape')
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     elevation = xs.foreign(FlowRouter, 'elevation')
-    single_flow = xs.foreign(FlowRouter, 'single_flow')
+    receivers = xs.foreign(FlowRouter, 'receivers')
+    flowacc = xs.foreign(FlowAccumulator, 'flowacc')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
     erosion = xs.variable(dims=('y', 'x'), intent='out', group='erosion')
@@ -28,14 +29,6 @@ class StreamPowerChannel:
     chi = xs.on_demand(
         dims=('y', 'x'),
         description='integrated drainage area (chi)'
-    )
-
-    # TODO: move drainage area to a separate process
-    # see https://github.com/fastscape-lem/fastscapelib-fortran/issues/24
-    drainage_area = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        description='drainage area'
     )
 
     def initialize(self):
@@ -63,7 +56,7 @@ class StreamPowerChannel:
         h_bak = self.fs_context.h.copy()
         self.fs_context.h = self.elevation.flatten()
 
-        if self.single_flow:
+        if self.receivers.ndim == 1:
             fs.streampowerlawsingleflowdirection()
         else:
             fs.streampowerlaw()

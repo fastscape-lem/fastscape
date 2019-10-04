@@ -2,7 +2,7 @@ import fastscapelib_fortran as fs
 import numpy as np
 import xsimlab as xs
 
-from .grid import RasterGrid2D
+from .grid import UniformRectilinearGrid2D
 from .surface import SurfaceTopography
 
 
@@ -13,8 +13,8 @@ class FastscapelibContext:
     state.
 
     """
-    shape = xs.foreign(RasterGrid2D, 'shape')
-    length = xs.foreign(RasterGrid2D, 'length')
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
+    length = xs.foreign(UniformRectilinearGrid2D, 'length')
 
     elevation = xs.foreign(SurfaceTopography, 'elevation')
 

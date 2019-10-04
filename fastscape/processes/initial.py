@@ -1,13 +1,13 @@
 import numpy as np
 import xsimlab as xs
 
-from .grid import RasterGrid2D
+from .grid import UniformRectilinearGrid2D
 from .surface import SurfaceTopography, TotalErosion
 
 
 @xs.process
 class FlatSurface:
-    shape = xs.foreign(RasterGrid2D, 'shape')
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     elevation = xs.foreign(SurfaceTopography, 'elevation', intent='out')
 
     def initialize(self):
