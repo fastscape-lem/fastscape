@@ -9,7 +9,7 @@ from ..processes.grid import RasterGrid2D
 from ..processes.hillslope import LinearDiffusion
 from ..processes.initial import FlatSurface, NoErosionHistory
 from ..processes.surface import (SurfaceTopography, TerrainDerivatives,
-                                 TotalErosion)
+                                 TotalErosion, TotalVerticalMotion)
 from ..processes.tectonics import BlockUplift
 
 
@@ -24,6 +24,7 @@ basic_model = xs.Model({
     'spl': StreamPowerChannel,
     'diffusion': LinearDiffusion,
     'erosion': TotalErosion,
+    'vmotion': TotalVerticalMotion,
     'topography': SurfaceTopography,
     'terrain': TerrainDerivatives,
     'init_topography': FlatSurface,

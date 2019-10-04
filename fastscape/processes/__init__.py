@@ -6,5 +6,6 @@ from .flow import (FlowSurface, UpliftedFlowSurface,
 from .grid import RasterGrid2D, UniformRectilinearGrid2D
 from .hillslope import LinearDiffusion, DiffusivityBedrockSoil
 from .initial import FlatSurface, NoErosionHistory
-from .surface import SurfaceTopography, TotalErosion
-from .tectonics import BlockUplift
+from .surface import (Bedrock, SurfaceTopography, TerrainDerivatives,
+                      TotalErosion, TotalVerticalMotion, UniformSoilLayer)
+from .tectonics import BaseVerticalUplift, BlockUplift

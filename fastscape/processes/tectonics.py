@@ -21,7 +21,7 @@ class BaseVerticalUplift:
     uplift = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='elevation_up',
+        group='bedrock_upward',
         description='imposed vertical uplift'
     )
 

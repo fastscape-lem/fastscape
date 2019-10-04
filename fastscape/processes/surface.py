@@ -6,38 +6,142 @@ from .grid import UniformRectilinearGrid2D
 
 
 @xs.process
+class TotalVerticalMotion:
+    """Sum up vertical motion of bedrock and topographic surface."""
+
+    bedrock_upward_vars = xs.group('bedrock_upward')
+    surface_downward_vars = xs.group('surface_downward')
+
+    bedrock_upward = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='total bedrock motion in upward direction'
+    )
+    surface_downward = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='total surface motion in downward direction'
+    )
+
+    def run_step(self):
+        self.bedrock_upward = sum((v for v in self.bedrock_upward_vars))
+        self.surface_downward = sum((v for v in self.surface_downward_vars))
+
+
+@xs.process
 class SurfaceTopography:
-    """Update a surface topography as resulting from
+    """Update surface topography as resulting from
     multiple processes either rising or lowering elevation.
 
     """
-    elevation = xs.variable(dims=('y', 'x'), intent='inout',
-                            description='surface topography elevation')
+    elevation = xs.variable(
+        dims=('y', 'x'),
+        intent='inout',
+        description='surface topography elevation'
+    )
 
-    elevation_up_vars = xs.group('elevation_up')
-    elevation_down_vars = xs.group('elevation_down')
+    bedrock_upward = xs.foreign(TotalVerticalMotion, 'bedrock_upward')
+    surface_downward = xs.foreign(TotalVerticalMotion, 'surface_downward')
 
     def run_step(self):
-        elevation_up = np.sum((v for v in self.elevation_up_vars))
-        elevation_down = np.sum((v for v in self.elevation_down_vars))
-        self.elevation_change = elevation_up - elevation_down
+        self.elevation_diff = self.bedrock_upward - self.surface_downward
 
     def finalize_step(self):
-        self.elevation += self.elevation_change
+        self.elevation += self.elevation_diff
+
+
+@xs.process
+class Bedrock:
+    """Update bedrock."""
+
+    elevation = xs.variable(
+        dims=('y', 'x'),
+        intent='inout',
+        description='bedrock elevation'
+    )
+
+    depth = xs.on_demand(
+        dims=('y', 'x'),
+        description='bedrock depth from topographic surface'
+    )
+
+    bedrock_upward = xs.foreign(TotalVerticalMotion, 'bedrock_upward')
+    surface_downward = xs.foreign(TotalVerticalMotion, 'surface_downward')
+    surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
+
+    @depth.compute
+    def _depth(self):
+        return self.surf_elevation - self.elevation
+
+    def initialize(self):
+        if np.any(self.elevation > self.surf_elevation):
+            raise ValueError("Encountered bedrock elevation higher than "
+                             "topographic surface elevation.")
+
+    def run_step(self):
+        pass
+        #depth_diff = self.depth + self.surf_elevation_diff
+
+        #self.elevation_diff = np.where(depth_diff)
+
+
+@xs.process
+class UniformSoilLayer:
+    """Uniform soil (or regolith, or sediment) layer."""
+
+    surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
+    bedrock_elevation = xs.foreign(Bedrock, 'elevation')
+
+    thickness = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='soil layer thickness'
+    )
+
+    @thickness.compute
+    def _get_thickness(self):
+        return self.surf_elevation - self.bedrock_elevation
+
+    def initialize(self):
+        self.thickness = self._get_thickness()
+
+    def run_step(self):
+        self.thickness = self._get_thickness()
 
 
 @xs.process
 class TotalErosion:
-    """Combine (sum) all erosion processes."""
-    erosion_vars = xs.group('erosion')
-    cumulative_erosion = xs.variable(dims=[(), ('y', 'x')], intent='inout')
-    erosion = xs.variable(dims=[(), ('y', 'x')], intent='out',
-                          description='total erosion',
-                          group='elevation_down')
+    """Sum up all erosion processes."""
 
-    def run_step(self):
+    erosion_vars = xs.group('erosion')
+
+    cumulative_erosion = xs.variable(
+        dims=[(), ('y', 'x')],
+        intent='inout'
+    )
+
+    erosion = xs.variable(
+        dims=[(), ('y', 'x')],
+        intent='out',
+        description='total erosion',
+        group='surface_downward'
+    )
+
+    erosion_rate = xs.on_demand(
+        dims=[(), ('y', 'x')],
+        description='erosion rate (all processes)'
+    )
+
+    @xs.runtime(args='step_delta')
+    def run_step(self, dt):
+        self._dt = dt
+
         self.erosion = np.sum((err for err in self.erosion_vars))
         self.cumulative_erosion += self.erosion
+
+    @erosion_rate.compute
+    def _erosion_rate(self):
+        return self.erosion / self._dt
 
 
 @xs.process

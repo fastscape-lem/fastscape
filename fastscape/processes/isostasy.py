@@ -8,20 +8,31 @@ from .tectonics import BaseVerticalUplift
 class BaseIsostasy:
     """Base class for isostasy.
 
-    It only defines the variable ``isostaty`` and should be
-    sub-classed.
+    Do not use this base class directly in a model! Use one of its
+    subclasses instead.
+
+    However, if you need one or several of the variables declared here
+    in another process, it is preferable to pass this base class in
+    :func:`xsimlab.foreign`.
 
     """
-    isostasy = xs.variable(dims=('y', 'x'), intent='out',
-                           group='elevation_up')
+    isostasy = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        group='bedrock_upward'
+    )
 
 
 @xs.process
 class BaseLocalIsostasy(BaseIsostasy):
     """Base class for local isostasy.
 
-    It only defines a local isostasic coefficient and should be
-    sub-classed.
+    Do not use this base class directly in a model! Use one of its
+    subclasses instead.
+
+    However, if you need one or several of the variables declared here
+    in another process, it is preferable to pass this base class in
+    :func:`xsimlab.foreign`.
 
     """
     i_coef = xs.variable(description='local isostatic coefficient')
