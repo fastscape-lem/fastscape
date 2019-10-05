@@ -7,7 +7,7 @@ from .grid import UniformRectilinearGrid2D
 
 @xs.process
 class TotalVerticalMotion:
-    """Sum up vertical motion of bedrock and topographic surface."""
+    """Sum up vertical motions of bedrock and topographic surface."""
 
     bedrock_upward_vars = xs.group('bedrock_upward')
     surface_downward_vars = xs.group('surface_downward')
@@ -30,10 +30,8 @@ class TotalVerticalMotion:
 
 @xs.process
 class SurfaceTopography:
-    """Update surface topography as resulting from
-    multiple processes either rising or lowering elevation.
+    """Update surface topography elevation."""
 
-    """
     elevation = xs.variable(
         dims=('y', 'x'),
         intent='inout',
@@ -51,8 +49,8 @@ class SurfaceTopography:
 
 
 @xs.process
-class Bedrock:
-    """Update bedrock."""
+class BedrockSurface:
+    """Update bedrock elevation."""
 
     elevation = xs.variable(
         dims=('y', 'x'),
@@ -79,10 +77,13 @@ class Bedrock:
                              "topographic surface elevation.")
 
     def run_step(self):
-        pass
-        #depth_diff = self.depth + self.surf_elevation_diff
+        self.elevation_diff = self.bedrock_upward + np.minimum(
+            self.surf_elevation - self.surface_downward,
+            self.elevation
+        )
 
-        #self.elevation_diff = np.where(depth_diff)
+    def finalize_step(self):
+        self.elevation += self.elevation_diff
 
 
 @xs.process
@@ -90,7 +91,7 @@ class UniformSoilLayer:
     """Uniform soil (or regolith, or sediment) layer."""
 
     surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
-    bedrock_elevation = xs.foreign(Bedrock, 'elevation')
+    bedrock_elevation = xs.foreign(BedrockSurface, 'elevation')
 
     thickness = xs.variable(
         dims=('y', 'x'),

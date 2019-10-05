@@ -4,54 +4,76 @@ import xsimlab as xs
 
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .surface import SurfaceTopography
+from .surface import SurfaceTopography, UniformSoilLayer
 
 
 @xs.process
 class LinearDiffusion:
     """Hillslope erosion by diffusion."""
 
-    diffusivity = xs.variable(dims=[(), ('y', 'x')], description='diffusivity')
-    erosion = xs.variable(dims=('y', 'x'), intent='out', group='erosion')
+    diffusivity = xs.variable(
+        dims=[(), ('y', 'x')],
+        description='diffusivity (transport coefficient)'
+    )
+    erosion = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        group='erosion'
+    )
 
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     elevation = xs.foreign(SurfaceTopography, 'elevation')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
-    @xs.runtime(args='step_delta')
-    def run_step(self, dt):
+    def run_step(self):
         kd = np.broadcast_to(self.diffusivity, self.shape).flatten()
         self.fs_context.kd = kd
 
         # we don't use the kdsed fastscapelib-fortran feature directly
-        # see class DiffusivityBedrockSoil
+        # see class DifferentialLinearDiffusion
         self.fs_context.kdsed = -1.
 
-        # fs.diffusion() updates elevation in-place: not desired here
-        elevation = self.fs_context.h.copy()
+        # bypass fastscapelib-fortran global state
+        h_bak = self.fs_context.h.copy()
+        self.fs_context.h = self.elevation.flatten()
 
         fs.diffusion()
 
-        erosion_flat = elevation - self.fs_context.h
+        erosion_flat = self.elevation.ravel() - self.fs_context.h
         self.erosion = erosion_flat.reshape(self.shape)
 
-        self.fs_context.h = elevation
+        # restore fastscapelib-fortran global state
+        self.fs_context.h = h_bak
 
 
 @xs.process
-class DiffusivityBedrockSoil:
-    """Use a different diffusivity value whether or
-    not bedrock is covered by a soil layer.
+class DifferentialLinearDiffusion(LinearDiffusion):
+    """Hillslope differential erosion by diffusion.
+
+    Diffusivity may vary depending on whether the topographic surface
+    is bare rock or covered by a soil (sediment) layer.
 
     """
-    bedrock = xs.variable(dims=[(), ('y', 'x')],
-                          description='diffusivity (bedrock)')
-    soil = xs.variable(description='diffusivity (soil)')
+    diffusivity_bedrock = xs.variable(
+        dims=[(), ('y', 'x')],
+        description='bedrock diffusivity'
+    )
+    diffusivity_soil = xs.variable(
+        dims=[(), ('y', 'x')],
+        description='soil (sediment) diffusivity'
+    )
 
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    diffusivity = xs.foreign(LinearDiffusion, 'diffusivity', intent='out')
+    diffusivity = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='differential diffusivity'
+    )
 
-    @xs.runtime(args='step_delta')
-    def run_step(self, dt):
-        # TODO: get soil thickness (surface - bedrock)
-        self.diffusivity = np.broadcast_to(self.bedrock, self.shape)
+    soil_thickness = xs.foreign(UniformSoilLayer, 'thickness')
+
+    def run_step(self):
+        self.diffusivity = np.where(self.soil_thickness <= 0.,
+                                    self.diffusivity_bedrock,
+                                    self.diffusivity_soil)
+
+        super(DifferentialLinearDiffusion, self).run_step()
