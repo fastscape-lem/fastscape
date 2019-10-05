@@ -6,10 +6,11 @@ from ..processes.context import FastscapelibContext
 from ..processes.flow import (DrainageArea, SingleFlowRouter,
                               UpliftedFlowSurface)
 from ..processes.grid import RasterGrid2D
-from ..processes.hillslope import LinearDiffusion
-from ..processes.initial import FlatSurface, NoErosionHistory
-from ..processes.surface import (SurfaceTopography, TerrainDerivatives,
-                                 TotalErosion, TotalVerticalMotion)
+from ..processes.hillslope import LinearDiffusion, DifferentialLinearDiffusion
+from ..processes.initial import BareRockSurface, FlatSurface, NoErosionHistory
+from ..processes.surface import (BedrockSurface, SurfaceTopography,
+                                 TerrainDerivatives, TotalErosion,
+                                 TotalVerticalMotion, UniformSoilLayer)
 from ..processes.tectonics import BlockUplift
 
 
@@ -29,4 +30,12 @@ basic_model = xs.Model({
     'terrain': TerrainDerivatives,
     'init_topography': FlatSurface,
     'init_erosion': NoErosionHistory
+})
+
+
+soil_model = basic_model.update_processes({
+    'bedrock': BedrockSurface,
+    'soil': UniformSoilLayer,
+    'init_bedrock': BareRockSurface,
+    'diffusion': DifferentialLinearDiffusion
 })
