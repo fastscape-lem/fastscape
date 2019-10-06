@@ -5,15 +5,16 @@ import xsimlab as xs
 from .context import FastscapelibContext
 from .flow import FlowAccumulator, FlowRouter
 from .grid import UniformRectilinearGrid2D
+from .surface import UniformSoilLayer
 
 
 @xs.process
 class StreamPowerChannel:
-    """Channel erosion computed using the Stream-Power Law."""
+    """Stream-Power channel erosion."""
 
     k_coef = xs.variable(
         dims=[(), ('y', 'x')],
-        description='stream-power coefficient'
+        description='bedrock channel incision coefficient'
     )
     area_exp = xs.variable(description='drainage area exponent')
     slope_exp = xs.variable(description='slope exponent')
@@ -31,22 +32,16 @@ class StreamPowerChannel:
         description='integrated drainage area (chi)'
     )
 
-    def initialize(self):
-        # TODO: move
-        pass
-        self.drainage_area = self.fs_context.a.reshape(self.shape)
-
     def _set_g_in_context(self):
         # transport/deposition feature is exposed in subclasses
-        self.fs_context.g = 0.
-        self.fs_context.gsed = -1.
+        self.fs_context.g1 = 0.
+        self.fs_context.g2 = -1.
 
-    @xs.runtime(args='step_delta')
-    def run_step(self, dt):
+    def run_step(self):
         kf = np.broadcast_to(self.k_coef, self.shape).flatten()
         self.fs_context.kf = kf
 
-        # we don't use the kfsed fastscapelib-fortran feature directly
+        # we don't use kfsed fastscapelib-fortran feature directly
         self.fs_context.kfsed = -1.
 
         self.fs_context.m = self.area_exp
@@ -76,17 +71,96 @@ class StreamPowerChannel:
 
 
 @xs.process
-class StreamPowerChannelTD(StreamPowerChannel):
-    """Channel erosion computed using a extended version of
-    the Stream-Power Law that also models sediment transport and
-    deposition.
+class DifferentialStreamPowerChannel(StreamPowerChannel):
+    """Stream-Power channel (differential) erosion.
+
+    Channel incision coefficient may vary depending on whether the
+    topographic surface is bare rock or covered by a soil (sediment)
+    layer.
 
     """
-    td_coef = xs.variable(
-        description='sediment deposition/transport coefficient')
+    k_coef_bedrock = xs.variable(
+        dims=[(), ('y', 'x')],
+        description='bedrock channel incision coefficient'
+    )
+    k_coef_soil = xs.variable(
+        dims=[(), ('y', 'x')],
+        description='soil (sediment) channel incision coefficient'
+    )
+
+    k_coef = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='differential channel incision coefficient'
+    )
+
+    soil_thickness = xs.foreign(UniformSoilLayer, 'thickness')
+
+    def run_step(self):
+        self.k_coef = np.where(self.soil_thickness <= 0.,
+                               self.k_coef_bedrock,
+                               self.k_coef_soil)
+
+        super(DifferentialStreamPowerChannel, self).run_step()
+
+
+@xs.process
+class StreamPowerChannelTD(StreamPowerChannel):
+    """Extended stream power channel erosion, transport and deposition."""
+
+    # TODO: https://github.com/fastscape-lem/fastscapelib-fortran/pull/25
+    # - update input var dimensions
+    # - set self.get_context.g instead of g1 and g2
+
+    g_coef = xs.variable(
+        #dims=[(), ('y', 'x')],
+        description='detached bedrock transport/deposition coefficient'
+    )
 
     def _set_g_in_context(self):
-        self.fs_context.g = self.td_coef
+        # TODO: set g instead
+        self.fs_context.g1 = self.g_coef
+        self.fs_context.g2 = -1.
 
-        # we don't use the gsed fastscapelib-fortran feature directly
-        self.fs_context.gsed = -1.
+
+@xs.process
+class DifferentialStreamPowerChannelTD(DifferentialStreamPowerChannel):
+    """Extended stream power channel (differential) erosion, transport and
+    deposition.
+
+    Both channel incision and transport/deposition coefficients may
+    vary depending on whether the topographic surface is bare rock or
+    covered by a soil (sediment) layer.
+
+    """
+    # TODO: https://github.com/fastscape-lem/fastscapelib-fortran/pull/25
+    # - update input var dimensions
+    # - set self.get_context.g instead of g1 and g2
+
+    g_coef_bedrock = xs.variable(
+        #dims=[(), ('y', 'x')],
+        description='detached bedrock transport/deposition coefficient'
+    )
+
+    g_coef_soil = xs.variable(
+        #dims=[(), ('y', 'x')],
+        description='soil (sediment) transport/deposition coefficient'
+    )
+
+    g_coef = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='differential transport/deposition coefficient'
+    )
+
+    def _set_g_in_context(self):
+        # TODO: set g instead
+        self.fs_context.g1 = self.g_coef_bedrock
+        self.fs_context.g2 = self.g_coef_soil
+
+    def run_step(self):
+        self.g_coef = np.where(self.soil_thickness <= 0.,
+                               self.g_coef_bedrock,
+                               self.g_coef_soil)
+
+        super(DifferentialStreamPowerChannel, self).run_step()

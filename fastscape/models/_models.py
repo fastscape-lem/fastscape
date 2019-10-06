@@ -1,7 +1,8 @@
 import xsimlab as xs
 
 from ..processes.boundary import BorderBoundary
-from ..processes.channel import StreamPowerChannel
+from ..processes.channel import (StreamPowerChannel,
+                                 DifferentialStreamPowerChannelTD)
 from ..processes.context import FastscapelibContext
 from ..processes.flow import (DrainageArea, SingleFlowRouter,
                               UpliftedFlowSurface)
@@ -37,5 +38,6 @@ soil_model = basic_model.update_processes({
     'bedrock': BedrockSurface,
     'soil': UniformSoilLayer,
     'init_bedrock': BareRockSurface,
+    'spl': DifferentialStreamPowerChannelTD,
     'diffusion': DifferentialLinearDiffusion
 })

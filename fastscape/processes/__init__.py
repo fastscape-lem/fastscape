@@ -1,5 +1,7 @@
 from .boundary import BorderBoundary
-from .channel import StreamPowerChannel, StreamPowerChannelTD
+from .channel import (DifferentialStreamPowerChannel,
+                      DifferentialStreamPowerChannelTD,
+                      StreamPowerChannel, StreamPowerChannelTD)
 from .flow import (FlowSurface, UpliftedFlowSurface,
                    FlowRouter, SingleFlowRouter,
                    MultipleFlowRouter, AdaptiveFlowRouter)

@@ -7,8 +7,10 @@ from .grid import UniformRectilinearGrid2D
 
 @xs.process
 class TotalVerticalMotion:
-    """Sum up vertical motions of bedrock and topographic surface."""
+    """Sum up all vertical motions of bedrock and topographic surface,
+    respectively.
 
+    """
     bedrock_upward_vars = xs.group('bedrock_upward')
     surface_downward_vars = xs.group('surface_downward')
 
@@ -20,7 +22,7 @@ class TotalVerticalMotion:
     surface_downward = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        description='total surface motion in downward direction'
+        description='total topographic surface motion in downward direction'
     )
 
     def run_step(self):
