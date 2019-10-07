@@ -4,15 +4,19 @@ from ..processes.boundary import BorderBoundary
 from ..processes.channel import (StreamPowerChannel,
                                  DifferentialStreamPowerChannelTD)
 from ..processes.context import FastscapelibContext
-from ..processes.flow import (DrainageArea, SingleFlowRouter,
-                              UpliftedFlowSurface)
+from ..processes.flow import DrainageArea, SingleFlowRouter
 from ..processes.grid import RasterGrid2D
 from ..processes.hillslope import LinearDiffusion, DifferentialLinearDiffusion
 from ..processes.initial import BareRockSurface, FlatSurface, NoErosionHistory
-from ..processes.surface import (BedrockSurface, SurfaceTopography,
-                                 TerrainDerivatives, TotalErosion,
-                                 TotalVerticalMotion, UniformSoilLayer)
-from ..processes.tectonics import BlockUplift
+from ..processes.surface import (BedrockSurface,
+                                 SurfaceTopography,
+                                 TerrainDerivatives,
+                                 TotalErosion,
+                                 TotalVerticalMotion,
+                                 UniformSoilLayer)
+from ..processes.tectonics import (BlockUplift,
+                                   SurfaceAfterTectonics,
+                                   TectonicsForcing)
 
 
 basic_model = xs.Model({
@@ -20,7 +24,8 @@ basic_model = xs.Model({
     'fs_context': FastscapelibContext,
     'boundary': BorderBoundary,
     'uplift': BlockUplift,
-    'flow_surface': UpliftedFlowSurface,
+    'tectonics': TectonicsForcing,
+    'surf2erode': SurfaceAfterTectonics,
     'flow': SingleFlowRouter,
     'drainage': DrainageArea,
     'spl': StreamPowerChannel,

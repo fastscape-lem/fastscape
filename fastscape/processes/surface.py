@@ -11,23 +11,32 @@ class TotalVerticalMotion:
     respectively.
 
     """
+    #TODO: remove any_upward_vars
+    # see https://github.com/benbovy/xarray-simlab/issues/64
+    any_upward_vars = xs.group('any_upward')
     bedrock_upward_vars = xs.group('bedrock_upward')
+    surface_upward_vars = xs.group('surface_upward')
     surface_downward_vars = xs.group('surface_downward')
 
-    bedrock_upward = xs.variable(
+    bedrock = xs.variable(
         dims=('y', 'x'),
         intent='out',
         description='total bedrock motion in upward direction'
     )
-    surface_downward = xs.variable(
+    surface = xs.variable(
         dims=('y', 'x'),
         intent='out',
         description='total topographic surface motion in downward direction'
     )
 
     def run_step(self):
-        self.bedrock_upward = sum((v for v in self.bedrock_upward_vars))
-        self.surface_downward = sum((v for v in self.surface_downward_vars))
+        sum_any = sum(self.any_upward_vars)
+
+        self.bedrock = sum_any + sum(self.bedrock_upward_vars)
+
+        self.surface = (sum_any +
+                        sum(self.surface_upward_vars) -
+                        sum(self.surface_downward_vars))
 
 
 @xs.process
@@ -40,14 +49,35 @@ class SurfaceTopography:
         description='surface topography elevation'
     )
 
-    bedrock_upward = xs.foreign(TotalVerticalMotion, 'bedrock_upward')
-    surface_downward = xs.foreign(TotalVerticalMotion, 'surface_downward')
-
-    def run_step(self):
-        self.elevation_diff = self.bedrock_upward - self.surface_downward
+    surface_motion = xs.foreign(TotalVerticalMotion, 'surface')
 
     def finalize_step(self):
-        self.elevation += self.elevation_diff
+        self.elevation += self.surface_motion
+
+
+@xs.process
+class SurfaceToErode:
+    """Defines the topographic surface used for the computation of erosion
+    processes.
+
+    In this process class, it simply corresponds to the topographic
+    surface, unchanged, at the current time step.
+
+    Sometimes it would make sense to compute erosion processes after
+    having applied other processes such as tectonic forcing. This
+    could be achieved by subclassing.
+
+    """
+    topo_elevation = xs.foreign(SurfaceTopography, 'elevation')
+
+    elevation = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='surface elevation before erosion'
+    )
+
+    def run_step(self):
+        self.elevation = self.topo_elevation
 
 
 @xs.process
@@ -65,27 +95,25 @@ class BedrockSurface:
         description='bedrock depth from topographic surface'
     )
 
-    bedrock_upward = xs.foreign(TotalVerticalMotion, 'bedrock_upward')
-    surface_downward = xs.foreign(TotalVerticalMotion, 'surface_downward')
-    surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
+    bedrock_motion = xs.foreign(TotalVerticalMotion, 'bedrock')
+    surface_motion = xs.foreign(TotalVerticalMotion, 'surface')
+
+    surface_elevation = xs.foreign(SurfaceTopography, 'elevation')
 
     @depth.compute
     def _depth(self):
         return self.surf_elevation - self.elevation
 
     def initialize(self):
-        if np.any(self.elevation > self.surf_elevation):
+        if np.any(self.elevation > self.surface_elevation):
             raise ValueError("Encountered bedrock elevation higher than "
                              "topographic surface elevation.")
 
-    def run_step(self):
-        self.elevation_diff = self.bedrock_upward + np.minimum(
-            self.surf_elevation - self.surface_downward,
-            self.elevation
-        )
-
     def finalize_step(self):
-        self.elevation += self.elevation_diff
+        self.elevation = np.minimum(
+            self.elevation + self.bedrock_motion,
+            self.surface_elevation + self.surface_motion
+        )
 
 
 @xs.process

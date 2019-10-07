@@ -16,10 +16,12 @@ class BaseIsostasy:
     :func:`xsimlab.foreign`.
 
     """
+    # TODO: group=['bedrock_upward', 'surface_upward']
+    # see https://github.com/benbovy/xarray-simlab/issues/64
     isostasy = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='bedrock_upward'
+        group='any_upward'
     )
 
 

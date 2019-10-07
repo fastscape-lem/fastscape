@@ -7,43 +7,8 @@ import xsimlab as xs
 
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .surface import SurfaceTopography
-from .tectonics import BaseVerticalUplift
-
-
-@xs.process
-class FlowSurface:
-    """Defines the surface on which to apply flow routing
-    and all dependent processes.
-
-    This surface here corresponds to the topographic surface at
-    the current time step.
-
-    """
-    topo_elevation = xs.foreign(SurfaceTopography, 'elevation')
-
-    elevation = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        description='surface elevation before flow'
-    )
-
-    @xs.runtime(args='step_delta')
-    def run_step(self, dt):
-        self.elevation = self.topo_elevation
-
-
-@xs.process
-class UpliftedFlowSurface(FlowSurface):
-    """Use this process to apply flow routing on the already
-    uplifted topographic surface.
-
-    """
-    uplift = xs.foreign(BaseVerticalUplift, 'uplift')
-
-    @xs.runtime(args='step_delta')
-    def run_step(self, dt):
-        self.elevation = self.topo_elevation + self.uplift
+from .surface import SurfaceTopography, SurfaceToErode
+from .tectonics import TectonicsForcing
 
 
 @xs.process
@@ -59,7 +24,7 @@ class FlowRouter:
 
     """
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    elevation = xs.foreign(FlowSurface, 'elevation')
+    elevation = xs.foreign(SurfaceToErode, 'elevation')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
     stack = xs.variable(

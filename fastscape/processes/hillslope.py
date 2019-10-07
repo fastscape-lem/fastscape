@@ -4,7 +4,7 @@ import xsimlab as xs
 
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .surface import SurfaceTopography, UniformSoilLayer
+from .surface import SurfaceToErode, UniformSoilLayer
 
 
 @xs.process
@@ -22,7 +22,7 @@ class LinearDiffusion:
     )
 
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    elevation = xs.foreign(SurfaceTopography, 'elevation')
+    elevation = xs.foreign(SurfaceToErode, 'elevation')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
     def run_step(self):
