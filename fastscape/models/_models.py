@@ -10,6 +10,7 @@ from ..processes.hillslope import LinearDiffusion, DifferentialLinearDiffusion
 from ..processes.initial import BareRockSurface, FlatSurface, NoErosionHistory
 from ..processes.surface import (BedrockSurface,
                                  SurfaceTopography,
+                                 SurfaceToErode,
                                  TerrainDerivatives,
                                  TotalErosion,
                                  TotalVerticalMotion,
@@ -19,20 +20,25 @@ from ..processes.tectonics import (BlockUplift,
                                    TectonicsForcing)
 
 
-basic_model = xs.Model({
+bootstrap_model = xs.Model({
     'grid': RasterGrid2D,
     'fs_context': FastscapelibContext,
     'boundary': BorderBoundary,
-    'uplift': BlockUplift,
     'tectonics': TectonicsForcing,
+    'surf2erode': SurfaceToErode,
+    'erosion': TotalErosion,
+    'vmotion': TotalVerticalMotion,
+    'topography': SurfaceTopography,
+})
+
+
+basic_model = bootstrap_model.update_processes({
+    'uplift': BlockUplift,
     'surf2erode': SurfaceAfterTectonics,
     'flow': SingleFlowRouter,
     'drainage': DrainageArea,
     'spl': StreamPowerChannel,
     'diffusion': LinearDiffusion,
-    'erosion': TotalErosion,
-    'vmotion': TotalVerticalMotion,
-    'topography': SurfaceTopography,
     'terrain': TerrainDerivatives,
     'init_topography': FlatSurface,
     'init_erosion': NoErosionHistory
