@@ -20,4 +20,4 @@ from .surface import (BedrockSurface,
 from .tectonics import (BlockUplift,
                         HorizontalAdvection,
                         SurfaceAfterTectonics,
-                        TectonicsForcing)
+                        TectonicForcing)

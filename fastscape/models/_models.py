@@ -17,14 +17,14 @@ from ..processes.surface import (BedrockSurface,
                                  UniformSoilLayer)
 from ..processes.tectonics import (BlockUplift,
                                    SurfaceAfterTectonics,
-                                   TectonicsForcing)
+                                   TectonicForcing)
 
 
 bootstrap_model = xs.Model({
     'grid': RasterGrid2D,
     'fs_context': FastscapelibContext,
     'boundary': BorderBoundary,
-    'tectonics': TectonicsForcing,
+    'tectonics': TectonicForcing,
     'surf2erode': SurfaceToErode,
     'erosion': TotalErosion,
     'vmotion': TotalVerticalMotion,

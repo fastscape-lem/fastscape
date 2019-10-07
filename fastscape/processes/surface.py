@@ -10,6 +10,9 @@ class TotalVerticalMotion:
     """Sum up all vertical motions of bedrock and topographic surface,
     respectively.
 
+    Vertical motions may result from external forcing, erosion and/or
+    feedback of erosion on tectonics (isostasy).
+
     """
     #TODO: remove any_upward_vars
     # see https://github.com/benbovy/xarray-simlab/issues/64

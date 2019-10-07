@@ -8,7 +8,7 @@ import xsimlab as xs
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
 from .surface import SurfaceTopography, SurfaceToErode
-from .tectonics import TectonicsForcing
+from .tectonics import TectonicForcing
 
 
 @xs.process

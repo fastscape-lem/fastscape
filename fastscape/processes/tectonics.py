@@ -9,8 +9,8 @@ from .surface import BedrockSurface, SurfaceTopography, SurfaceToErode
 
 
 @xs.process
-class TectonicsForcing:
-    """Sum up all tectonics forcing processes and their effect on the
+class TectonicForcing:
+    """Sum up all tectonic forcing processes and their effect on the
     vertical motion of the bedrock surface and the topographic
     surface, respectively.
 
@@ -44,20 +44,13 @@ class TectonicsForcing:
 
 @xs.process
 class SurfaceAfterTectonics(SurfaceToErode):
-    """Defines the topographic surface used for the computation of erosion
-    processes.
-
-    In this process class, it simply corresponds to the topographic
-    surface at the current time step, unchanged.
-
-    Sometimes it would make sense to compute erosion processes after
-    having applied other processes such as tectonic forcing. This
-    could be achieved by subclassing.
+    """Used for the computation erosion processes after
+    applying tectonic forcing.
 
     """
     topo_elevation = xs.foreign(SurfaceTopography, 'elevation')
 
-    forced_motion = xs.foreign(TectonicsForcing, 'surface_upward')
+    forced_motion = xs.foreign(TectonicForcing, 'surface_upward')
 
     elevation = xs.variable(
         dims=('y', 'x'),
