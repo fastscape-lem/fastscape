@@ -1,7 +1,11 @@
+import fastscapelib_fortran as fs
+import numpy as np
 import xsimlab as xs
 
-from .main_drivers import TotalErosion
-from .tectonics import BaseVerticalUplift
+from .boundary import BorderBoundary
+from .grid import UniformRectilinearGrid2D
+from .surface import SurfaceTopography, TotalErosion
+from .tectonics import TectonicForcing
 
 
 @xs.process
@@ -18,10 +22,11 @@ class BaseIsostasy:
     """
     # TODO: group=['bedrock_upward', 'surface_upward']
     # see https://github.com/benbovy/xarray-simlab/issues/64
-    isostasy = xs.variable(
+    rebound = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='any_upward'
+        group='any_upward',
+        description='isostasic rebound due to material loading/unloading'
     )
 
 
@@ -46,29 +51,78 @@ class LocalIsostasyErosion(BaseLocalIsostasy):
 
     erosion = xs.foreign(TotalErosion, 'erosion')
 
-    @xs.runtime(args='step_delta')
-    def run_step(self, dt):
-        self.isostasy = self.i_coef * self.erosion
+    def run_step(self):
+        self.rebound = self.i_coef * self.erosion
 
 
 @xs.process
-class LocalIsostasyUplift(BaseLocalIsostasy):
-    """Local isostasic effect of rock uplift."""
+class LocalIsostasyTectonics(BaseLocalIsostasy):
+    """Local isostasic effect of tectonic forcing."""
 
-    uplift = xs.foreign(BaseVerticalUplift, 'uplift')
+    bedrock_upward = xs.foreign(TectonicForcing, 'bedrock_upward')
 
-    @xs.runtime(args='step_delta')
-    def run_step(self, dt):
-        self.isostasy = -1. * self.i_coef * self.uplift
+    def run_step(self):
+        self.rebound = -1. * self.i_coef * self.bedrock_upward
 
 
 @xs.process
-class LocalIsostasyErosionUplift(BaseLocalIsostasy):
-    """Local isostatic effect of both erosion and tectonic uplift."""
+class LocalIsostasyErosionTectonics(BaseLocalIsostasy):
+    """Local isostatic effect of both erosion and tectonic forcing.
+
+    This process makes no distinction between the density of rock and
+    the density of eroded material (one single coefficient is used).
+
+    """
+    erosion = xs.foreign(TotalErosion, 'erosion')
+    surface_upward = xs.foreign(TectonicForcing, 'surface_upward')
+
+    def run_step(self):
+        self.rebound = self.i_coef * (self.erosion - self.surface_upward)
+
+
+@xs.process
+class Flexure(BaseIsostasy):
+    """Flexural isostatic effect of both erosion and tectonic
+    forcing.
+
+    """
+    lithos_density = xs.variable(
+        dims=[(), ('y', 'x')],
+        description='lithospheric rock density'
+    )
+    asthen_density = xs.variable(
+        description='asthenospheric rock density'
+    )
+    e_thickness = xs.variable(
+        description='effective elastic plate thickness'
+    )
+
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
+    length = xs.foreign(UniformRectilinearGrid2D, 'length')
+
+    ibc = xs.foreign(BorderBoundary, 'ibc')
+
+    elevation = xs.foreign(SurfaceTopography, 'elevation')
 
     erosion = xs.foreign(TotalErosion, 'erosion')
-    uplift = xs.foreign(BaseVerticalUplift, 'uplift')
+    surface_upward = xs.foreign(TectonicForcing, 'surface_upward')
 
-    @xs.runtime(args='step_delta')
-    def run_step(self, dt):
-        self.isostasy = self.i_coef * (self.erosion - self.rock_uplift)
+    def run_step(self):
+        ny, nx = self.shape
+        yl, xl = self.length
+
+        lithos_density = np.broadcast_to(
+            self.lithos_density, self.shape).flatten()
+
+        elevation = self.elevation.ravel()
+        diff = (self.surface_upward - self.erosion).ravel()
+
+        # set elevation pre and post rebound
+        elevation_pre = elevation - diff
+        elevation_post = elevation_pre.copy()
+
+        fs.flexure(elevation_post, elevation, nx, ny, xl, yl,
+                   lithos_density, self.asthen_density, self.e_thickness,
+                   self.ibc)
+
+        self.rebound = (elevation_post - elevation_pre).reshape(self.shape)
