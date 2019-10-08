@@ -17,6 +17,7 @@ from .isostasy import (BaseIsostasy,
                        LocalIsostasyErosion,
                        LocalIsostasyErosionTectonics,
                        LocalIsostasyTectonics)
+from .marine import MarineSedimentTransport, Sea
 from .surface import (BedrockSurface,
                       SurfaceTopography,
                       SurfaceToErode,
