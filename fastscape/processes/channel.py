@@ -9,7 +9,27 @@ from .surface import UniformSoilLayer
 
 
 @xs.process
-class StreamPowerChannel:
+class ChannelErosion:
+    """Base class for continental channel erosion and/or deposition.
+
+    Do not use this base class directly in a model! Use one of its
+    subclasses instead.
+
+    However, if you need one or several of the variables declared here
+    in another process, it is preferable to pass this base class in
+    :func:`xsimlab.foreign`.
+
+    """
+    erosion = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        group='erosion',
+        description='channel erosion and/or deposition'
+    )
+
+
+@xs.process
+class StreamPowerChannel(ChannelErosion):
     """Stream-Power channel erosion."""
 
     k_coef = xs.variable(
@@ -24,8 +44,6 @@ class StreamPowerChannel:
     receivers = xs.foreign(FlowRouter, 'receivers')
     flowacc = xs.foreign(FlowAccumulator, 'flowacc')
     fs_context = xs.foreign(FastscapelibContext, 'context')
-
-    erosion = xs.variable(dims=('y', 'x'), intent='out', group='erosion')
 
     chi = xs.on_demand(
         dims=('y', 'x'),

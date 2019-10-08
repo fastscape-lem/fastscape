@@ -1,5 +1,6 @@
 from .boundary import BorderBoundary
-from .channel import (DifferentialStreamPowerChannel,
+from .channel import (ChannelErosion,
+                      DifferentialStreamPowerChannel,
                       DifferentialStreamPowerChannelTD,
                       StreamPowerChannel,
                       StreamPowerChannelTD)
