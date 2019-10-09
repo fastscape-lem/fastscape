@@ -102,7 +102,50 @@ class BlockUplift:
     @xs.runtime(args='step_delta')
     def run_step(self, dt):
         rate = np.broadcast_to(self.rate, self.shape) * self._mask
+
+        # TODO: remove setting u in context (not used)
         self.fs_context.u = rate.ravel()
+
+        self.uplift = rate * dt
+
+
+@xs.process
+class TwoBlocksUplift:
+    """Set two blocks separated by a clip plane, with different
+    uplift rates.
+
+    """
+    x_position = xs.variable(
+        description='position of the clip plane along the x-axis'
+    )
+
+    rate_left = xs.variable(
+        description='uplift rate of the left block'
+    )
+    rate_right = xs.variable(
+        description='uplift rate of the right block')
+
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
+    x = xs.foreign(UniformRectilinearGrid2D, 'x')
+
+    # TODO: group=['bedrock_forcing_upward', 'surface_forcing_upward']
+    # see https://github.com/benbovy/xarray-simlab/issues/64
+    uplift = xs.variable(
+        dims=[(), ('y', 'x')],
+        intent='out',
+        group='any_forcing_upward',
+        description='imposed vertical uplift'
+    )
+
+    def initialize(self):
+        # align clip plane position
+        self._x_idx = np.argmax(self.x > self.x_position)
+
+    @xs.runtime(args='step_delta')
+    def run_step(self, dt):
+        rate = np.full(self.shape, self.rate_left)
+
+        rate[:, self._x_idx:] = self.rate_right
 
         self.uplift = rate * dt
 

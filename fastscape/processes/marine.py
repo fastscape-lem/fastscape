@@ -15,7 +15,7 @@ class Sea:
     # TODO: add diagnostics like shoreline extraction or
     # continental area vs. marine masks.
 
-    level = xs.variable(description='sea level')
+    level = xs.variable(description='sea level (elevation)')
 
 
 @xs.process

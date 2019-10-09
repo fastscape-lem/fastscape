@@ -19,6 +19,40 @@ class FlatSurface:
 
 
 @xs.process
+class Escarpment:
+    """Initialize surface topography as a steep escarpment separating two
+    nearly flat surfaces.
+
+    Random perturbations are added to the elevation of each plateau.
+
+    """
+    x_position = xs.variable(
+        description='position of the escarpment along the x-axis'
+    )
+
+    elevation_left = xs.variable(
+        description='elevation on the left side of the scarp'
+    )
+    elevation_right = xs.variable(
+        description='elevation on the right side of the scarp')
+
+    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
+    x = xs.foreign(UniformRectilinearGrid2D, 'x')
+    elevation = xs.foreign(SurfaceTopography, 'elevation', intent='out')
+
+    def initialize(self):
+        self.elevation = np.full(self.shape, self.elevation_left)
+
+        # align scarp position
+        x_idx = np.argmax(self.x > self.x_position)
+
+        self.elevation[:, x_idx:] = self.elevation_right
+
+        # ensure lower elevation on x limits for good drainage patterns
+        self.elevation[:, 1:-1] += np.random.rand(*self.shape)[:, 1:-1]
+
+
+@xs.process
 class BareRockSurface:
     """Initialize topographic surface as a bare rock surface."""
 

@@ -10,7 +10,10 @@ from .flow import (FlowRouter,
                    AdaptiveFlowRouter)
 from .grid import RasterGrid2D, UniformRectilinearGrid2D
 from .hillslope import LinearDiffusion, DifferentialLinearDiffusion
-from .initial import BareRockSurface, FlatSurface, NoErosionHistory
+from .initial import (BareRockSurface,
+                      Escarpment,
+                      FlatSurface,
+                      NoErosionHistory)
 from .isostasy import (BaseIsostasy,
                        BaseLocalIsostasy,
                        Flexure,
@@ -28,4 +31,5 @@ from .surface import (BedrockSurface,
 from .tectonics import (BlockUplift,
                         HorizontalAdvection,
                         SurfaceAfterTectonics,
-                        TectonicForcing)
+                        TectonicForcing,
+                        TwoBlocksUplift)
