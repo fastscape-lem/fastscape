@@ -103,9 +103,6 @@ class BlockUplift:
     def run_step(self, dt):
         rate = np.broadcast_to(self.rate, self.shape) * self._mask
 
-        # TODO: remove setting u in context (not used)
-        self.fs_context.u = rate.ravel()
-
         self.uplift = rate * dt
 
 
@@ -188,8 +185,6 @@ class HorizontalAdvection:
         self.fs_context.vy = np.broadcast_to(self.v, self.shape).flatten()
 
         # bypass fastscapelib-fortran state
-        h_bak = self.fs_context.h.copy()
-        b_bak = self.fs_context.h.copy()
         self.fs_context.h = self.surface_elevation.flatten()
         self.fs_context.b = self.bedrock_elevation.flatten()
 
@@ -200,7 +195,3 @@ class HorizontalAdvection:
 
         b_advected = self.fs_context.b.reshape(self.shape)
         self.bedrock_veffect = b_advected - self.bedrock_elevation
-
-        # restore fastscapelib-fortran state
-        self.fs_context.h = h_bak
-        self.fs_context.b = b_bak

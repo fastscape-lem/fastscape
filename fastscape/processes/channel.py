@@ -66,8 +66,11 @@ class StreamPowerChannel(ChannelErosion):
         self.fs_context.n = self.slope_exp
 
         # bypass fastscapelib_fortran global state
-        h_bak = self.fs_context.h.copy()
         self.fs_context.h = self.elevation.flatten()
+
+        # TODO: https://github.com/fastscape-lem/fastscapelib-fortran/pull/25
+        # this has no effect yet.
+        self.fs_context.a = self.flowacc.flatten()
 
         if self.receivers.ndim == 1:
             fs.streampowerlawsingleflowdirection()
@@ -76,9 +79,6 @@ class StreamPowerChannel(ChannelErosion):
 
         erosion_flat = self.elevation.ravel() - self.fs_context.h
         self.erosion = erosion_flat.reshape(self.shape)
-
-        # restore fastscapelib_fortran global state
-        self.fs_context.h = h_bak
 
     @chi.compute
     def _chi(self):

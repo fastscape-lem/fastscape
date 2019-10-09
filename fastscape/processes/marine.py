@@ -100,7 +100,6 @@ class MarineSedimentTransport:
         self.fs_context.Sedflux = self.sediment_source.ravel()
 
         # bypass fastscapelib-fortran global state
-        h_bak = self.fs_context.h.copy()
         self.fs_context.h = self.elevation.flatten()
 
         fs.marine()
@@ -109,6 +108,3 @@ class MarineSedimentTransport:
         self.erosion = erosion_flat.reshape(self.shape)
 
         self.silt_fraction = self.fs_context.Fmix.copy().reshape(self.shape)
-
-        # restore fastscapelib_fortran global state
-        self.fs_context.h = h_bak

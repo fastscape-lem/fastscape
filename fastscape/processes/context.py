@@ -31,12 +31,10 @@ class FastscapelibContext:
 
         self.context = fs.fastscapecontext
 
-        self.context.h = self.elevation.flatten()
-
     @xs.runtime(args='step_delta')
     def run_step(self, dt):
+        # fastscapelib-fortran runtime routines use dt from context
         self.context.dt = dt
-        self.context.h = self.elevation.flatten()
 
     def finalize(self):
         fs.fastscape_destroy()

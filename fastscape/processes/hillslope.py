@@ -34,16 +34,12 @@ class LinearDiffusion:
         self.fs_context.kdsed = -1.
 
         # bypass fastscapelib-fortran global state
-        h_bak = self.fs_context.h.copy()
         self.fs_context.h = self.elevation.flatten()
 
         fs.diffusion()
 
         erosion_flat = self.elevation.ravel() - self.fs_context.h
         self.erosion = erosion_flat.reshape(self.shape)
-
-        # restore fastscapelib-fortran global state
-        self.fs_context.h = h_bak
 
 
 @xs.process
