@@ -177,8 +177,8 @@ class DifferentialStreamPowerChannelTD(DifferentialStreamPowerChannel):
         self.fs_context.g2 = self.g_coef_soil
 
     def run_step(self):
-        self.g_coef = np.where(self.soil_thickness <= 0.,
+        self.g_coef = np.where(self.active_layer_thickness <= 0.,
                                self.g_coef_bedrock,
                                self.g_coef_soil)
 
-        super(DifferentialStreamPowerChannel, self).run_step()
+        super(DifferentialStreamPowerChannelTD, self).run_step()

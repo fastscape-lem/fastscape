@@ -67,7 +67,7 @@ class Escarpment:
             scarp_coord = self.x[idx_left:idx_right] - self.x[idx_left]
 
             self.elevation[:, idx_left:idx_right] = (
-                self.elevation_left + scarp_slope * scarp_x
+                self.elevation_left + scarp_slope * scarp_coord
             )
 
 

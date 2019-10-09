@@ -118,8 +118,8 @@ class BedrockSurface:
 
     def finalize_step(self):
         self.elevation = np.minimum(
-            self.elevation + self.bedrock_motion,
-            self.surface_elevation + self.surface_motion
+            self.elevation + self.bedrock_motion_up,
+            self.surface_elevation + self.surface_motion_up
         )
 
 
@@ -222,7 +222,7 @@ class StratigraphicHorizons:
     bedrock_motion = xs.foreign(TotalVerticalMotion, 'bedrock_upward')
 
     elevation = xs.variable(
-        dims=('horizon,' 'y', 'x'),
+        dims=('horizon', 'y', 'x'),
         intent='out',
         description='elevation of horizon surfaces'
     )
@@ -237,9 +237,11 @@ class StratigraphicHorizons:
                                    self.freeze_time.size,
                                    axis=0)
 
+        self.active = np.full_like(self.freeze_time, True, dtype=bool)
+
     @xs.runtime(args='step_start')
     def run_step(self, current_time):
-        self.active = self.freeze_time < current_time
+        self.active = current_time < self.freeze_time
 
     def finalize_step(self):
         elevation_next = self.surf_elevation + self.elevation_motion
