@@ -14,7 +14,7 @@ from ..processes.main import (BedrockSurface,
                               SurfaceToErode,
                               TerrainDerivatives,
                               TotalVerticalMotion,
-                              UniformSoilLayer)
+                              UniformSedimentLayer)
 from ..processes.tectonics import (BlockUplift,
                                    SurfaceAfterTectonics,
                                    TectonicForcing)
@@ -59,18 +59,18 @@ basic_model = bootstrap_model.update_processes({
     'init_erosion': NoErosionHistory
 })
 
-# `soil_model` is built on top of `basic_model` and tracks the
+# `sediment_model` is built on top of `basic_model` and tracks the
 # evolution of both the topographic surface and the bedrock, separated
-# by a uniform soil (or regolith or sediment) layer. This model uses
-# an extended version of the stream-power law that also includes
-# channel transport and deposition. Differential erosion/deposition is
-# enabled for both hillslope and channel processes, i.e., distinct
-# values may be set for the erosion and transport coefficients
-# (bedrock vs soil/sediment).
+# by a uniform, active layer of sediment. This model uses an extended
+# version of the stream-power law that also includes channel transport
+# and deposition. Differential erosion/deposition is enabled for both
+# hillslope and channel processes, i.e., distinct values may be set
+# for the erosion and transport coefficients (bedrock vs
+# soil/sediment).
 
-soil_model = basic_model.update_processes({
+sediment_model = basic_model.update_processes({
     'bedrock': BedrockSurface,
-    'soil': UniformSoilLayer,
+    'active_layer': UniformSedimentLayer,
     'init_bedrock': BareRockSurface,
     'spl': DifferentialStreamPowerChannelTD,
     'diffusion': DifferentialLinearDiffusion

@@ -5,7 +5,7 @@ import xsimlab as xs
 from .context import FastscapelibContext
 from .flow import FlowAccumulator, FlowRouter
 from .grid import UniformRectilinearGrid2D
-from .main import UniformSoilLayer
+from .main import UniformSedimentLayer
 
 
 @xs.process
@@ -112,10 +112,10 @@ class DifferentialStreamPowerChannel(StreamPowerChannel):
         description='differential channel incision coefficient'
     )
 
-    soil_thickness = xs.foreign(UniformSoilLayer, 'thickness')
+    active_layer_thickness = xs.foreign(UniformSedimentLayer, 'thickness')
 
     def run_step(self):
-        self.k_coef = np.where(self.soil_thickness <= 0.,
+        self.k_coef = np.where(self.active_layer_thickness <= 0.,
                                self.k_coef_bedrock,
                                self.k_coef_soil)
 

@@ -4,7 +4,7 @@ import xsimlab as xs
 
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .main import SurfaceToErode, UniformSoilLayer
+from .main import SurfaceToErode, UniformSedimentLayer
 
 
 @xs.process
@@ -65,7 +65,7 @@ class DifferentialLinearDiffusion(LinearDiffusion):
         description='differential diffusivity'
     )
 
-    soil_thickness = xs.foreign(UniformSoilLayer, 'thickness')
+    soil_thickness = xs.foreign(UniformSedimentLayer, 'thickness')
 
     def run_step(self):
         self.diffusivity = np.where(self.soil_thickness <= 0.,

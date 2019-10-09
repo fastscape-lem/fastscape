@@ -26,7 +26,7 @@ from .main import (BedrockSurface,
                       SurfaceToErode,
                       TerrainDerivatives,
                       TotalVerticalMotion,
-                      UniformSoilLayer)
+                      UniformSedimentLayer)
 from .marine import MarineSedimentTransport, Sea
 from .tectonics import (BlockUplift,
                         HorizontalAdvection,

@@ -44,8 +44,10 @@ class TotalVerticalMotion:
 
 @xs.process
 class SurfaceTopography:
-    """Update surface topography elevation."""
+    """Update the elevation of the (land and/or submarine) surface
+    topography.
 
+    """
     elevation = xs.variable(
         dims=('y', 'x'),
         intent='inout',
@@ -85,8 +87,10 @@ class SurfaceToErode:
 
 @xs.process
 class BedrockSurface:
-    """Update bedrock elevation."""
+    """Update the elevation of bedrock (i.e., land and/or submarine
+    basement).
 
+    """
     elevation = xs.variable(
         dims=('y', 'x'),
         intent='inout',
@@ -120,7 +124,7 @@ class BedrockSurface:
 
 
 @xs.process
-class UniformSoilLayer:
+class UniformSedimentLayer:
     """Uniform soil (or regolith, or sediment) layer."""
 
     surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
