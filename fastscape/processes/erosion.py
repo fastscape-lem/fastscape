@@ -1,6 +1,8 @@
 import numpy as np
 import xsimlab as xs
 
+from .grid import UniformRectilinearGrid2D
+
 
 @xs.process
 class TotalErosion:
@@ -8,30 +10,41 @@ class TotalErosion:
 
     erosion_vars = xs.group('erosion')
 
-    cumulative_erosion = xs.variable(
+    cumulative_height = xs.variable(
         dims=[(), ('y', 'x')],
-        intent='inout'
+        intent='inout',
+        description='erosion height accumulated over time'
     )
 
-    erosion = xs.variable(
+    height = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        description='total erosion',
+        description='total erosion height at current step',
         group='surface_downward'
     )
 
-    erosion_rate = xs.on_demand(
+    rate = xs.on_demand(
         dims=[(), ('y', 'x')],
-        description='erosion rate (all processes)'
+        description='total erosion rate at current step'
+    )
+
+    grid_area = xs.foreign(UniformRectilinearGrid2D, 'area')
+
+    domain_rate = xs.on_demand(
+        description='domain-integrated volumetric erosion rate'
     )
 
     @xs.runtime(args='step_delta')
     def run_step(self, dt):
         self._dt = dt
 
-        self.erosion = np.sum(self.erosion_vars)
-        self.cumulative_erosion += self.erosion
+        self.height = np.sum(self.erosion_vars)
+        self.cumulative_height += self.height
 
-    @erosion_rate.compute
-    def _erosion_rate(self):
-        return self.erosion / self._dt
+    @rate.compute
+    def _rate(self):
+        return self.height / self._dt
+
+    @domain_rate.compute
+    def _domain_rate(self):
+        return np.sum(self.height) * self.grid_area / self._dt

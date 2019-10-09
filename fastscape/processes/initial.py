@@ -68,7 +68,7 @@ class BareRockSurface:
 class NoErosionHistory:
     """Initialize erosion to zero (no erosion history)."""
 
-    erosion = xs.foreign(TotalErosion, 'cumulative_erosion', intent='out')
+    height = xs.foreign(TotalErosion, 'cumulative_height', intent='out')
 
     def initialize(self):
-        self.erosion = 0.
+        self.height = 0.

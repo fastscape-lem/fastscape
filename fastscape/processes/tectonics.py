@@ -35,11 +35,24 @@ class TectonicForcing:
         description='imposed vertical motion of topographic surface'
     )
 
-    def run_step(self):
+    grid_area = xs.foreign(UniformRectilinearGrid2D, 'area')
+
+    domain_rate = xs.on_demand(
+        description='domain-integrated volumetric tectonic rate'
+    )
+
+    @xs.runtime(args='step_delta')
+    def run_step(self, dt):
+        self._dt = dt
+
         sum_any = sum(self.any_forcing_vars)
 
         self.bedrock_upward = sum_any + sum(self.bedrock_forcing_vars)
         self.surface_upward = sum_any + sum(self.surface_forcing_vars)
+
+    @domain_rate.compute
+    def _domain_rate(self):
+        return np.sum(self.surface_upward) * self.grid_area / self._dt
 
 
 @xs.process

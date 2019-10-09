@@ -50,7 +50,7 @@ class BaseLocalIsostasy(BaseIsostasy):
 class LocalIsostasyErosion(BaseLocalIsostasy):
     """Local isostasic effect of erosion."""
 
-    erosion = xs.foreign(TotalErosion, 'erosion')
+    erosion = xs.foreign(TotalErosion, 'height')
 
     def run_step(self):
         self.rebound = self.i_coef * self.erosion
@@ -74,7 +74,7 @@ class LocalIsostasyErosionTectonics(BaseLocalIsostasy):
     the density of eroded material (one single coefficient is used).
 
     """
-    erosion = xs.foreign(TotalErosion, 'erosion')
+    erosion = xs.foreign(TotalErosion, 'height')
     surface_upward = xs.foreign(TectonicForcing, 'surface_upward')
 
     def run_step(self):
@@ -105,7 +105,7 @@ class Flexure(BaseIsostasy):
 
     elevation = xs.foreign(SurfaceTopography, 'elevation')
 
-    erosion = xs.foreign(TotalErosion, 'erosion')
+    erosion = xs.foreign(TotalErosion, 'height')
     surface_upward = xs.foreign(TectonicForcing, 'surface_upward')
 
     def run_step(self):
