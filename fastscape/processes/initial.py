@@ -21,14 +21,19 @@ class FlatSurface:
 
 @xs.process
 class Escarpment:
-    """Initialize surface topography as a steep escarpment separating two
+    """Initialize surface topography as an escarpment separating two
     nearly flat surfaces.
 
-    Random perturbations are added to the elevation of each plateau.
+    The slope of the escarpment is uniform (linear interpolation
+    between the two plateaus). Random perturbations are added to the
+    elevation of each plateau.
 
     """
-    x_position = xs.variable(
-        description='position of the escarpment along the x-axis'
+    x_left = xs.variable(
+        description="location of the scarp's left limit on the x-axis"
+    )
+    x_right = xs.variable(
+        description="location of the scarp's right limit on the x-axis"
     )
 
     elevation_left = xs.variable(
@@ -44,13 +49,26 @@ class Escarpment:
     def initialize(self):
         self.elevation = np.full(self.shape, self.elevation_left)
 
-        # align scarp position
-        x_idx = np.argmax(self.x > self.x_position)
+        # align scarp limit locations
+        idx_left = np.argmax(self.x > self.x_left)
+        idx_right = np.argmax(self.x > self.x_right)
 
-        self.elevation[:, x_idx:] = self.elevation_right
+        self.elevation[:, idx_right:] = self.elevation_right
 
-        # ensure lower elevation on x limits for good drainage patterns
+        # ensure lower elevation on x-axis limits for nice drainage patterns
         self.elevation[:, 1:-1] += np.random.rand(*self.shape)[:, 1:-1]
+
+        # create scarp slope
+        scarp_width = self.x[idx_right] - self.x[idx_left]
+
+        if scarp_width > 0:
+            scarp_height = (self.elevation_right - self.elevation_left)
+            scarp_slope = scarp_height / scarp_width
+            scarp_coord = self.x[idx_left:idx_right] - self.x[idx_left]
+
+            self.elevation[:, idx_left:idx_right] = (
+                self.elevation_left + scarp_slope * scarp_x
+            )
 
 
 @xs.process
