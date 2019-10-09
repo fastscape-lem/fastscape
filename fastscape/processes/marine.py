@@ -33,8 +33,13 @@ class MarineSedimentTransport:
     with depth and the transport coefficient (diffusivity).
 
     """
-    sand_silt_ratio = xs.variable(
-        description='sand/silt ratio of continental integrated sediment source'
+    ss_ratio_land = xs.variable(
+        description='sand/silt ratio of continental sediment source'
+    )
+    ss_ratio_sea = xs.variable(
+        dims=('y', 'x'),
+        intent='out',
+        description='sand/silt ratio of marine sediment layer'
     )
 
     surf_porosity_sand = xs.variable(
@@ -75,15 +80,9 @@ class MarineSedimentTransport:
         description='marine erosion or deposition of sand/silt'
     )
 
-    # TODO: ratio sand over silt more consistent?
-    silt_fraction = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        description='silt fraction of marine sediment'
-    )
 
     def run_step(self):
-        self.fs_context.ratio = self.sand_silt_ratio
+        self.fs_context.ratio = self.ss_ratio_land
 
         self.fs_context.poro1 = self.surf_porosity_sand
         self.fs_context.poro2 = self.surf_porosity_silt
@@ -107,4 +106,4 @@ class MarineSedimentTransport:
         erosion_flat = self.elevation.ravel() - self.fs_context.h
         self.erosion = erosion_flat.reshape(self.shape)
 
-        self.silt_fraction = self.fs_context.Fmix.copy().reshape(self.shape)
+        self.ss_ratio_sea = self.fs_context.Fmix.copy().reshape(self.shape)
