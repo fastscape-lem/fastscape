@@ -3,7 +3,7 @@ import numpy as np
 import xsimlab as xs
 
 from .grid import UniformRectilinearGrid2D
-from .surface import SurfaceTopography
+from .main import SurfaceTopography
 
 
 @xs.process

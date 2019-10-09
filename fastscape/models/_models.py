@@ -5,16 +5,16 @@ from ..processes.channel import (StreamPowerChannel,
                                  DifferentialStreamPowerChannelTD)
 from ..processes.context import FastscapelibContext
 from ..processes.flow import DrainageArea, SingleFlowRouter
+from ..processes.erosion import TotalErosion
 from ..processes.grid import RasterGrid2D
 from ..processes.hillslope import LinearDiffusion, DifferentialLinearDiffusion
 from ..processes.initial import BareRockSurface, FlatSurface, NoErosionHistory
-from ..processes.surface import (BedrockSurface,
-                                 SurfaceTopography,
-                                 SurfaceToErode,
-                                 TerrainDerivatives,
-                                 TotalErosion,
-                                 TotalVerticalMotion,
-                                 UniformSoilLayer)
+from ..processes.main import (BedrockSurface,
+                              SurfaceTopography,
+                              SurfaceToErode,
+                              TerrainDerivatives,
+                              TotalVerticalMotion,
+                              UniformSoilLayer)
 from ..processes.tectonics import (BlockUplift,
                                    SurfaceAfterTectonics,
                                    TectonicForcing)

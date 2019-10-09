@@ -4,7 +4,7 @@ import xsimlab as xs
 
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .surface import SurfaceToErode, UniformSoilLayer
+from .main import SurfaceToErode, UniformSoilLayer
 
 
 @xs.process

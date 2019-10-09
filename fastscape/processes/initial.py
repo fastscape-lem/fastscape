@@ -1,8 +1,9 @@
 import numpy as np
 import xsimlab as xs
 
+from .erosion import TotalErosion
 from .grid import UniformRectilinearGrid2D
-from .surface import BedrockSurface, SurfaceTopography, TotalErosion
+from .main import BedrockSurface, SurfaceTopography
 
 
 @xs.process

@@ -5,7 +5,7 @@ import xsimlab as xs
 from .boundary import BorderBoundary
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .surface import BedrockSurface, SurfaceTopography, SurfaceToErode
+from .main import BedrockSurface, SurfaceTopography, SurfaceToErode
 
 
 @xs.process

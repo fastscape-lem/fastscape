@@ -5,7 +5,7 @@ import xsimlab as xs
 from .context import FastscapelibContext
 from .flow import FlowAccumulator, FlowRouter
 from .grid import UniformRectilinearGrid2D
-from .surface import UniformSoilLayer
+from .main import UniformSoilLayer
 
 
 @xs.process

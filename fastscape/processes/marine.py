@@ -5,7 +5,7 @@ import xsimlab as xs
 from .channel import ChannelErosion
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .surface import SurfaceToErode
+from .main import SurfaceToErode
 
 
 @xs.process

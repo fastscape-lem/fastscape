@@ -3,8 +3,9 @@ import numpy as np
 import xsimlab as xs
 
 from .boundary import BorderBoundary
+from .erosion import TotalErosion
 from .grid import UniformRectilinearGrid2D
-from .surface import SurfaceTopography, TotalErosion
+from .main import SurfaceTopography
 from .tectonics import TectonicForcing
 
 

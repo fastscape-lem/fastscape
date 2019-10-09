@@ -4,6 +4,7 @@ from .channel import (ChannelErosion,
                       DifferentialStreamPowerChannelTD,
                       StreamPowerChannel,
                       StreamPowerChannelTD)
+from .erosion import TotalErosion
 from .flow import (FlowRouter,
                    SingleFlowRouter,
                    MultipleFlowRouter,
@@ -20,14 +21,13 @@ from .isostasy import (BaseIsostasy,
                        LocalIsostasyErosion,
                        LocalIsostasyErosionTectonics,
                        LocalIsostasyTectonics)
-from .marine import MarineSedimentTransport, Sea
-from .surface import (BedrockSurface,
+from .main import (BedrockSurface,
                       SurfaceTopography,
                       SurfaceToErode,
                       TerrainDerivatives,
-                      TotalErosion,
                       TotalVerticalMotion,
                       UniformSoilLayer)
+from .marine import MarineSedimentTransport, Sea
 from .tectonics import (BlockUplift,
                         HorizontalAdvection,
                         SurfaceAfterTectonics,
