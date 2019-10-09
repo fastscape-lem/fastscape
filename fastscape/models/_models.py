@@ -12,7 +12,7 @@ from ..processes.initial import (BareRockSurface,
                                  Escarpment,
                                  FlatSurface,
                                  NoErosionHistory)
-from ..processes.main import (BedrockSurface,
+from ..processes.main import (Bedrock,
                               StratigraphicHorizons,
                               SurfaceTopography,
                               SurfaceToErode,
@@ -76,7 +76,7 @@ basic_model = bootstrap_model.update_processes({
 # soil/sediment).
 
 sediment_model = basic_model.update_processes({
-    'bedrock': BedrockSurface,
+    'bedrock': Bedrock,
     'active_layer': UniformSedimentLayer,
     'init_bedrock': BareRockSurface,
     'flow': MultipleFlowRouter,

@@ -21,7 +21,7 @@ from .isostasy import (BaseIsostasy,
                        LocalIsostasyErosion,
                        LocalIsostasyErosionTectonics,
                        LocalIsostasyTectonics)
-from .main import (BedrockSurface,
+from .main import (Bedrock,
                    SurfaceTopography,
                    SurfaceToErode,
                    StratigraphicHorizons,

@@ -5,7 +5,7 @@ import xsimlab as xs
 from .boundary import BorderBoundary
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .main import BedrockSurface, SurfaceTopography, SurfaceToErode
+from .main import Bedrock, SurfaceTopography, SurfaceToErode
 
 
 @xs.process
@@ -176,7 +176,7 @@ class HorizontalAdvection:
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
-    bedrock_elevation = xs.foreign(BedrockSurface, 'elevation')
+    bedrock_elevation = xs.foreign(Bedrock, 'elevation')
     surface_elevation = xs.foreign(SurfaceTopography, 'elevation')
 
     bedrock_veffect = xs.variable(

@@ -3,7 +3,7 @@ import xsimlab as xs
 
 from .erosion import TotalErosion
 from .grid import UniformRectilinearGrid2D
-from .main import BedrockSurface, SurfaceTopography
+from .main import Bedrock, SurfaceTopography
 
 
 @xs.process
@@ -76,7 +76,7 @@ class BareRockSurface:
     """Initialize topographic surface as a bare rock surface."""
 
     surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
-    bedrock_elevation = xs.foreign(BedrockSurface, 'elevation', intent='out')
+    bedrock_elevation = xs.foreign(Bedrock, 'elevation', intent='out')
 
     def initialize(self):
         self.bedrock_elevation = self.surf_elevation.copy()

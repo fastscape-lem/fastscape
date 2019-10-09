@@ -86,7 +86,7 @@ class SurfaceToErode:
 
 
 @xs.process
-class BedrockSurface:
+class Bedrock:
     """Update the elevation of bedrock (i.e., land and/or submarine
     basement).
 
@@ -134,7 +134,7 @@ class UniformSedimentLayer:
     """
 
     surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
-    bedrock_elevation = xs.foreign(BedrockSurface, 'elevation')
+    bedrock_elevation = xs.foreign(Bedrock, 'elevation')
 
     thickness = xs.variable(
         dims=('y', 'x'),
