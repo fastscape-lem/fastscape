@@ -21,12 +21,12 @@ class TotalVerticalMotion:
     surface_upward_vars = xs.group('surface_upward')
     surface_downward_vars = xs.group('surface_downward')
 
-    bedrock = xs.variable(
+    bedrock_upward = xs.variable(
         dims=('y', 'x'),
         intent='out',
         description='bedrock motion in upward direction'
     )
-    surface = xs.variable(
+    surface_upward = xs.variable(
         dims=('y', 'x'),
         intent='out',
         description='topographic surface motion in upward direction'
@@ -35,11 +35,11 @@ class TotalVerticalMotion:
     def run_step(self):
         sum_any = sum(self.any_upward_vars)
 
-        self.bedrock = sum_any + sum(self.bedrock_upward_vars)
+        self.bedrock_upward = sum_any + sum(self.bedrock_upward_vars)
 
-        self.surface = (sum_any +
-                        sum(self.surface_upward_vars) -
-                        sum(self.surface_downward_vars))
+        self.surface_upward = (sum_any +
+                               sum(self.surface_upward_vars) -
+                               sum(self.surface_downward_vars))
 
 
 @xs.process
@@ -54,10 +54,10 @@ class SurfaceTopography:
         description='surface topography elevation'
     )
 
-    surface_motion = xs.foreign(TotalVerticalMotion, 'surface')
+    motion_upward = xs.foreign(TotalVerticalMotion, 'surface_upward')
 
     def finalize_step(self):
-        self.elevation += self.surface_motion
+        self.elevation += self.motion_upward
 
 
 @xs.process
@@ -99,11 +99,11 @@ class BedrockSurface:
 
     depth = xs.on_demand(
         dims=('y', 'x'),
-        description='bedrock depth from topographic surface'
+        description='bedrock depth below topographic surface'
     )
 
-    bedrock_motion = xs.foreign(TotalVerticalMotion, 'bedrock')
-    surface_motion = xs.foreign(TotalVerticalMotion, 'surface')
+    bedrock_motion_up = xs.foreign(TotalVerticalMotion, 'bedrock_upward')
+    surface_motion_up = xs.foreign(TotalVerticalMotion, 'surface_upward')
 
     surface_elevation = xs.foreign(SurfaceTopography, 'elevation')
 
@@ -125,7 +125,13 @@ class BedrockSurface:
 
 @xs.process
 class UniformSedimentLayer:
-    """Uniform soil (or regolith, or sediment) layer."""
+    """Uniform sediment (or regolith, or soil) layer.
+
+    This layer has uniform properties (undefined in this class) and
+    generally undergo under active erosion, transport and deposition
+    processes.
+
+    """
 
     surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
     bedrock_elevation = xs.foreign(BedrockSurface, 'elevation')
@@ -133,7 +139,7 @@ class UniformSedimentLayer:
     thickness = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        description='soil layer thickness'
+        description='sediment layer thickness'
     )
 
     @thickness.compute
@@ -185,3 +191,62 @@ class TerrainDerivatives:
         fs.curvature(self.elevation.ravel(), curv.ravel(), nx, ny, dx, dy)
 
         return curv
+
+
+@xs.process
+class StratigraphicHorizons:
+    """Generate a fixed number of stratigraphic horizons.
+
+    A horizon is active, i.e., it tracks the evolution of the
+    land/submarine topographic surface until it is "frozen" at a given
+    time. Beyond this freezing (or deactivation) time, the horizon
+    will only be affected by tectonic deformation and/or erosion.
+
+    To compute diagnostics on those horizons, you can create a
+    subclass where you can add "on_demand" variables.
+
+    """
+    freeze_time = xs.variable(
+        dims='horizon',
+        description='horizon freezing (deactivation) time'
+    )
+
+    active = xs.variable(
+        dims='horizon',
+        intent='out',
+        description='whether the horizon is active or not'
+    )
+
+    surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
+    elevation_motion = xs.foreign(TotalVerticalMotion, 'surface_upward')
+    bedrock_motion = xs.foreign(TotalVerticalMotion, 'bedrock_upward')
+
+    elevation = xs.variable(
+        dims=('horizon,' 'y', 'x'),
+        intent='out',
+        description='elevation of horizon surfaces'
+    )
+
+    @xs.runtime(args='sim_start')
+    def initialize(self, start_time):
+        if np.any(self.freeze_time < start_time):
+            raise ValueError("'freeze_time' value must be greater than the "
+                             "time of the beginning of the simulation")
+
+        self.elevation = np.repeat(self.surf_elevation[None, :, :],
+                                   self.freeze_time.size,
+                                   axis=0)
+
+    @xs.runtime(args='step_start')
+    def run_step(self, current_time):
+        self.active = self.freeze_time < current_time
+
+    def finalize_step(self):
+        elevation_next = self.surf_elevation + self.elevation_motion
+
+        self.elevation[self.active] = elevation_next
+
+        self.elevation[~self.active] = np.minimum(
+            self.elevation[~self.active] + self.bedrock_motion,
+            elevation_next
+        )

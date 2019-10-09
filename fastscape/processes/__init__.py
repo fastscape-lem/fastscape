@@ -22,11 +22,12 @@ from .isostasy import (BaseIsostasy,
                        LocalIsostasyErosionTectonics,
                        LocalIsostasyTectonics)
 from .main import (BedrockSurface,
-                      SurfaceTopography,
-                      SurfaceToErode,
-                      TerrainDerivatives,
-                      TotalVerticalMotion,
-                      UniformSedimentLayer)
+                   SurfaceTopography,
+                   SurfaceToErode,
+                   StratigraphicHorizons,
+                   TerrainDerivatives,
+                   TotalVerticalMotion,
+                   UniformSedimentLayer)
 from .marine import MarineSedimentTransport, Sea
 from .tectonics import (BlockUplift,
                         HorizontalAdvection,
