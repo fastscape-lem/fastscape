@@ -1,6 +1,8 @@
 from setuptools import setup, find_packages
 from os.path import exists
 
+import versioneer
+
 
 setup(name='fastscape',
       version=versioneer.get_version(),
