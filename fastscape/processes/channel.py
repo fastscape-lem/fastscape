@@ -62,6 +62,8 @@ class StreamPowerChannel(ChannelErosion):
         # we don't use kfsed fastscapelib-fortran feature directly
         self.fs_context.kfsed = -1.
 
+        self._set_g_in_context()
+
         self.fs_context.m = self.area_exp
         self.fs_context.n = self.slope_exp
 
