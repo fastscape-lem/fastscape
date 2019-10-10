@@ -3,7 +3,7 @@ Fastscape
 
 |Doc Status|
 
-.. |Doc Status| https://readthedocs.org/projects/fastscape/badge/?version=latest
+.. |Doc Status| image:: https://readthedocs.org/projects/fastscape/badge/?version=latest
    :target: https://fastscape.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
