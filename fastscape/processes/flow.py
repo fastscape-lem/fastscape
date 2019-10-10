@@ -78,17 +78,13 @@ class FlowRouter:
 
     def run_step(self):
         # bypass fastscapelib_fortran global state
-        h_bak = self.fs_context.h.copy()
         self.fs_context.h = self.elevation.ravel()
 
         self.route_flow()
 
-        self.nb_donors = self.fs_context.ndon
+        self.nb_donors = self.fs_context.ndon.astype('int')
         # Fortran 1 vs Python 0 index
-        self.donors = self.fs_context.don - 1
-
-        # restore fastscapelib_fortran global state
-        self.fs_context.h = h_bak
+        self.donors = self.fs_context.don.astype('int') - 1
 
     @basin.compute
     def _basin(self):
@@ -120,7 +116,7 @@ class SingleFlowRouter(FlowRouter):
         fs.flowroutingsingleflowdirection()
 
         # Fortran 1 vs Python 0 index
-        self.stack = self.fs_context.stack - 1
+        self.stack = self.fs_context.stack.astype('int') - 1
         self.receivers = self.fs_context.rec - 1
         self.lengths = self.fs_context.length
 
@@ -144,9 +140,9 @@ class MultipleFlowRouter(FlowRouter):
         fs.flowrouting()
 
         # Fortran 1 vs Python 0 index | Fortran col vs Python row layout
-        self.stack = self.fs_context.mstack - 1
-        self.nb_receivers = self.fs_context.mnrec
-        self.receivers = self.fs_context.mrec.transpose() - 1
+        self.stack = self.fs_context.mstack.astype('int') - 1
+        self.nb_receivers = self.fs_context.mnrec.astype('int')
+        self.receivers = self.fs_context.mrec.astype('int').transpose() - 1
         self.lengths = self.fs_context.mlrec.transpose()
         self.weights = self.fs_context.mwrec.transpose()
 
