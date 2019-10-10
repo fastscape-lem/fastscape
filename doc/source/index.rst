@@ -63,7 +63,7 @@ License
 Acknowledgment
 --------------
 
-fastscape is developed at the `Earth Surface Process Modelling`__ group of
+Fastscape is developed at the `Earth Surface Process Modelling`__ group of
 the GFZ Helmholtz Centre Potsdam.
 
 __ http://www.gfz-potsdam.de/en/section/earth-surface-process-modelling/
