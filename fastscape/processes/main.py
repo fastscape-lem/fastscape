@@ -116,11 +116,14 @@ class Bedrock:
             raise ValueError("Encountered bedrock elevation higher than "
                              "topographic surface elevation.")
 
-    def finalize_step(self):
-        self.elevation = np.minimum(
+    def run_step(self):
+        self._elevation_next = np.minimum(
             self.elevation + self.bedrock_motion_up,
             self.surface_elevation + self.surface_motion_up
         )
+
+    def finalize_step(self):
+        self.elevation = self._elevation_next
 
 
 @xs.process
