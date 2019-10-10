@@ -38,7 +38,7 @@ class TotalErosion:
     def run_step(self, dt):
         self._dt = dt
 
-        self.height = np.sum(self.erosion_vars)
+        self.height = sum(self.erosion_vars)
         self.cumulative_height += self.height
 
     @rate.compute
