@@ -45,6 +45,7 @@ Documentation index
 **Help & reference**
 
 * :doc:`release_notes`
+* :doc:`cite`
 * :doc:`develop`
 
 .. toctree::
@@ -53,6 +54,7 @@ Documentation index
    :caption: Help & reference
 
    release_notes
+   cite
    develop
 
 License
@@ -67,3 +69,10 @@ Fastscape is developed at the `Earth Surface Process Modelling`__ group of
 the GFZ Helmholtz Centre Potsdam.
 
 __ http://www.gfz-potsdam.de/en/section/earth-surface-process-modelling/
+
+Citing fastscape
+----------------
+
+If you have used fastscape and would like to cite it in a scientific
+publication, we would certainly appreciate it (see :doc:`cite`
+section).
