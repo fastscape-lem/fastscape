@@ -31,3 +31,8 @@ table.docutils td {
   white-space: unset;
   word-wrap: break-word;
 }
+
+
+.highlight {
+  background: #efefef;
+}

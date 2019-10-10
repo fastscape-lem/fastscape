@@ -3,7 +3,7 @@
 Contributor Guide
 =================
 
-fastscape is an open-source project. Contributions are welcome, and they are
+Fastscape is an open-source project. Contributions are welcome, and they are
 greatly appreciated!
 
 You can contribute in many ways, e.g., by reporting bugs, submitting feedbacks,

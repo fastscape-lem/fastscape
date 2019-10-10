@@ -5,7 +5,7 @@ Models
 
 Fastscape provides a few landscape evolution model "presets", i.e.,
 :class:`xsimlab.Model` objects that can be used as-is or as a basis
-for building custom models. Those models are built from a large
+for building custom models. Those presets are built from a large
 collection of :doc:`processes`.
 
 For help on how to run and further customize those models, see the

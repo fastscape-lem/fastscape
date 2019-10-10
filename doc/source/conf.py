@@ -56,6 +56,13 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
 ]
 
+autodoc_default_flags = [
+    # Make sure that any autodoc declarations show the right members
+    "members",
+    "inherited-members",
+    "show-inheritance",
+]
+
 autosummary_generate = True
 
 napoleon_numpy_docstring = True
@@ -194,7 +201,7 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.7/', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
-    'xarray': ('http://xarray.pydata.org/en/stable/', None),
+    #'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    #'xarray': ('http://xarray.pydata.org/en/stable/', None),
     'xsimlab': ('https://xarray-simlab.readthedocs.io/en/latest/', None)
 }
