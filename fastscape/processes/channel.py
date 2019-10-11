@@ -53,7 +53,7 @@ class StreamPowerChannel(ChannelErosion):
     def _set_g_in_context(self):
         # transport/deposition feature is exposed in subclasses
         self.fs_context.g1 = 0.
-        self.fs_context.g2 = -1.
+        self.fs_context.g2 = 0.
 
     def run_step(self):
         kf = np.broadcast_to(self.k_coef, self.shape).flatten()
