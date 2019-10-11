@@ -115,14 +115,14 @@ class Flexure(BaseIsostasy):
         lithos_density = np.broadcast_to(
             self.lithos_density, self.shape).flatten()
 
-        elevation = self.elevation.ravel()
+        elevation_eq = self.elevation.flatten()
         diff = (self.surface_upward - self.erosion).ravel()
 
         # set elevation pre and post rebound
-        elevation_pre = elevation - diff
+        elevation_pre = elevation_eq + diff
         elevation_post = elevation_pre.copy()
 
-        fs.flexure(elevation_post, elevation, nx, ny, xl, yl,
+        fs.flexure(elevation_post, elevation_eq, nx, ny, xl, yl,
                    lithos_density, self.asthen_density, self.e_thickness,
                    self.ibc)
 
