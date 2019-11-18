@@ -7,8 +7,7 @@ import xsimlab as xs
 
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .main import SurfaceTopography, SurfaceToErode
-from .tectonics import TectonicForcing
+from .main import SurfaceToErode
 
 
 @xs.process
@@ -122,7 +121,16 @@ class SingleFlowRouter(FlowRouter):
 
     @slope.compute
     def _slope(self):
-        return (self.elevation - self.elevation[self.receivers]) / self.length
+        elev_flat = self.elevation.ravel()
+        elev_flat_diff = elev_flat - elev_flat[self.receivers]
+
+        # skip base levels
+        slope = np.zeros_like(self.lengths)
+        idx = np.argwhere(self.lengths > 0)
+
+        slope[idx] = elev_flat_diff[idx] / self.lengths[idx],
+
+        return slope
 
 
 @xs.process
