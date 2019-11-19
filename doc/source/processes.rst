@@ -131,6 +131,8 @@ Processes that route flow on the topographic surface.
    SingleFlowRouter
    MultipleFlowRouter
    AdaptiveFlowRouter
+   FlowAccumulator
+   DrainageArea
 
 Erosion / deposition
 --------------------

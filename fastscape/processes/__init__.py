@@ -5,7 +5,9 @@ from .channel import (ChannelErosion,
                       StreamPowerChannel,
                       StreamPowerChannelTD)
 from .erosion import TotalErosion
-from .flow import (FlowRouter,
+from .flow import (DrainageArea,
+                   FlowAccumulator,
+                   FlowRouter,
                    SingleFlowRouter,
                    MultipleFlowRouter,
                    AdaptiveFlowRouter)
