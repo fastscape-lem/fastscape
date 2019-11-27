@@ -109,7 +109,7 @@ class Bedrock:
 
     @depth.compute
     def _depth(self):
-        return self.surf_elevation - self.elevation
+        return self.surface_elevation - self.elevation
 
     def initialize(self):
         if np.any(self.elevation > self.surface_elevation):
