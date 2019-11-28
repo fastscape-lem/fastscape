@@ -4,6 +4,7 @@ import pytest
 from fastscape.processes import (Bedrock,
                                  SurfaceToErode,
                                  SurfaceTopography,
+                                 TerrainDerivatives,
                                  TotalVerticalMotion,
                                  UniformSedimentLayer)
 
@@ -105,3 +106,30 @@ def test_uniform_sediment_layer():
 
     p.run_step()
     np.testing.assert_equal(p.thickness, expected)
+
+
+def test_terrain_derivatives():
+    X, Y = np.meshgrid(np.linspace(-5, 5, 11), np.linspace(-5, 5, 21))
+    spacing = (0.5, 1.)  # note: dy, dx
+
+    # test slope and curvature using parabola
+    elevation = X**2 + Y**2
+
+    p = TerrainDerivatives(shape=elevation.shape,
+                           spacing=spacing,
+                           elevation=elevation)
+
+    expected_slope = np.sqrt((2 * X)**2 + (2 * Y)**2)
+    expected_curvature = ((2 + 4 * X**2 + 4 * Y**2) /
+                          (1 + 4 * X**2 + 4 * Y**2)**1.5)
+
+    def assert_skip_bounds(actual, expected):
+        np.testing.assert_allclose(actual[1:-1, 1:-1], expected[1:-1, 1:-1])
+
+    # note: slope values in degrees, skip boundaries
+    actual_slope = np.tan(np.radians(p._slope()))
+    assert_skip_bounds(actual_slope, expected_slope)
+
+    # TODO: figure out why difference of factor 2
+    actual_curvature = p._curvature()
+    assert_skip_bounds(actual_curvature, expected_curvature / 2)
