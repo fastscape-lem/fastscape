@@ -4,6 +4,7 @@ import pytest
 from fastscape.processes import (Bedrock,
                                  SurfaceToErode,
                                  SurfaceTopography,
+                                 StratigraphicHorizons,
                                  TerrainDerivatives,
                                  TotalVerticalMotion,
                                  UniformSedimentLayer)
@@ -133,3 +134,36 @@ def test_terrain_derivatives():
     # TODO: figure out why difference of factor 2
     actual_curvature = p._curvature()
     assert_skip_bounds(actual_curvature, expected_curvature / 2)
+
+
+def test_stratigraphic_horizons():
+    freeze_time = np.array([10., 20., 30.])
+
+    surf_elevation = np.array([[1., 1., 1.],
+                               [2., 2., 2.]])
+
+    p = StratigraphicHorizons(
+        freeze_time=freeze_time,
+        surf_elevation=surf_elevation,
+        bedrock_motion=np.array([[-0.2, -0.2, -0.2],
+                                 [0., 0., 0.]]),
+        elevation_motion=np.full_like(surf_elevation, -0.1)
+    )
+
+    with pytest.raises(ValueError, match=r"'freeze_time' value must be .*"):
+        p.initialize(100)
+
+    p.initialize(10.)
+    assert p.elevation.shape == freeze_time.shape + surf_elevation.shape
+    np.testing.assert_equal(p.active, np.array([True, True, True]))
+
+    p.run_step(25.)
+    p.finalize_step()
+    np.testing.assert_equal(p.active, np.array([False, False, True]))
+    np.testing.assert_equal(p.elevation[2],
+                            np.array([[0.9, 0.9, 0.9],
+                                      [1.9, 1.9, 1.9]]))
+    for i in [0, 1]:
+        np.testing.assert_equal(p.elevation[i],
+                                np.array([[0.8, 0.8, 0.8],
+                                          [1.9, 1.9, 1.9]]))
