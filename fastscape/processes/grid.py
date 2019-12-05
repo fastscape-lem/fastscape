@@ -80,8 +80,12 @@ class UniformRectilinearGrid2D:
         self.nx = self.shape[1]
         self.ny = self.shape[0]
 
-        self.x = np.linspace(self.origin[1], self.length[1], self.shape[1])
-        self.y = np.linspace(self.origin[0], self.length[0], self.shape[0])
+        self.x = np.linspace(self.origin[1],
+                             self.origin[1] + self.length[1],
+                             self.shape[1])
+        self.y = np.linspace(self.origin[0],
+                             self.origin[0] + self.length[0],
+                             self.shape[0])
 
 
 @xs.process
