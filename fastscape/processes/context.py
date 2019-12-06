@@ -16,8 +16,6 @@ class FastscapelibContext:
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     length = xs.foreign(UniformRectilinearGrid2D, 'length')
 
-    elevation = xs.foreign(SurfaceTopography, 'elevation')
-
     context = xs.variable(
         intent='out',
         description='accessor to fastscapelib-fortran internal variables'
