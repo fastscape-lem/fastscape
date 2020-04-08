@@ -18,6 +18,6 @@ setup(name='fastscape',
       long_description=(open('README.rst').read() if exists('README.rst')
                         else ''),
       python_requires='>=3.5',
-      install_requires=['xarray-simlab >= 0.3.0'],
+      install_requires=['xarray-simlab >= 0.4.0'],
       # tests_require=['pytest >= 3.3.0'],
       zip_safe=False)

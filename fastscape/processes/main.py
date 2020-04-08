@@ -211,8 +211,11 @@ class StratigraphicHorizons:
     """
     freeze_time = xs.variable(
         dims='horizon',
-        description='horizon freezing (deactivation) time'
+        description='horizon freezing (deactivation) time',
+        static=True
     )
+
+    horizon = xs.index(dims='horizon', description='horizon number')
 
     active = xs.variable(
         dims='horizon',
@@ -239,6 +242,8 @@ class StratigraphicHorizons:
         self.elevation = np.repeat(self.surf_elevation[None, :, :],
                                    self.freeze_time.size,
                                    axis=0)
+
+        self.horizon = np.arange(0, len(self.freeze_time))
 
         self.active = np.full_like(self.freeze_time, True, dtype=bool)
 

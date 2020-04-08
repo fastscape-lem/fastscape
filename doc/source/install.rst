@@ -8,8 +8,9 @@ Required dependencies
 
 - Python 3
 - `xarray <http://xarray.pydata.org>`__
-- `xarray-simlab <http://xarray-simlab.readthedocs.io>`__
-- `fastscapelib-fortran <https://github.com/fastscape-lem/fastscapelib-fortran>`__
+- `xarray-simlab <http://xarray-simlab.readthedocs.io>`__ (0.4.0 or later)
+- `fastscapelib-fortran
+  <https://github.com/fastscape-lem/fastscapelib-fortran>`__ (2.8.1 or later)
 
 Install using conda
 -------------------

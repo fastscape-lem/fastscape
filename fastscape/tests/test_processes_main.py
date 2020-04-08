@@ -155,6 +155,7 @@ def test_stratigraphic_horizons():
 
     p.initialize(10.)
     assert p.elevation.shape == freeze_time.shape + surf_elevation.shape
+    np.testing.assert_equal(p.horizon, np.array([0, 1, 2]))
     np.testing.assert_equal(p.active, np.array([True, True, True]))
 
     p.run_step(25.)

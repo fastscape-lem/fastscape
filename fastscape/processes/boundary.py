@@ -8,13 +8,12 @@ from .context import FastscapelibContext
 class BorderBoundary:
     status = xs.variable(
         dims=[(), 'border'],
-        description='node status at borders'
+        description='node status at borders',
+        static=True
     )
 
-    border = xs.variable(
-        dims='border',
-        intent='out',
-        description='4-border boundaries coordinate'
+    border = xs.index(
+        dims='border', description='4-border boundaries coordinate'
     )
     border_status = xs.variable(
         dims='border',

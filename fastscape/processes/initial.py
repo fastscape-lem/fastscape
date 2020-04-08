@@ -30,10 +30,12 @@ class Escarpment:
 
     """
     x_left = xs.variable(
-        description="location of the scarp's left limit on the x-axis"
+        description="location of the scarp's left limit on the x-axis",
+        static=True
     )
     x_right = xs.variable(
-        description="location of the scarp's right limit on the x-axis"
+        description="location of the scarp's right limit on the x-axis",
+        static=True
     )
 
     elevation_left = xs.variable(

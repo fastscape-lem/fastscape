@@ -8,15 +8,18 @@ class UniformRectilinearGrid2D:
 
     shape = xs.variable(
         dims='shape_yx',
-        description='nb. of grid nodes in (y, x)'
+        description='nb. of grid nodes in (y, x)',
+        static=True
     )
     spacing = xs.variable(
         dims='shape_yx',
-        description='grid node spacing in (y, x)'
+        description='grid node spacing in (y, x)',
+        static=True
     )
     origin = xs.variable(
         dims='shape_yx',
-        description='(y, x) coordinates of grid origin'
+        description='(y, x) coordinates of grid origin',
+        static=True
     )
 
     length = xs.variable(
@@ -55,16 +58,8 @@ class UniformRectilinearGrid2D:
         description="nb. of nodes in y (rows)"
     )
 
-    x = xs.variable(
-        dims='x',
-        intent='out',
-        description='grid x coordinate'
-    )
-    y = xs.variable(
-        dims='y',
-        intent='out',
-        description='grid y coordinate'
-    )
+    x = xs.index(dims='x', description='grid x coordinate')
+    y = xs.index(dims='y', description='grid y coordinate')
 
     def _set_length_or_spacing(self):
         self.length = (self.shape - 1) * self.spacing
@@ -95,7 +90,8 @@ class RasterGrid2D(UniformRectilinearGrid2D):
     length = xs.variable(
         dims='shape_yx',
         intent='in',
-        description='total grid length in (y, x)'
+        description='total grid length in (y, x)',
+        static=True
     )
     origin = xs.variable(
         dims='shape_yx',
