@@ -77,7 +77,7 @@ class MarineSedimentTransport:
     erosion = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='erosion',
+        groups='erosion',
         description='marine erosion or deposition of sand/silt'
     )
 

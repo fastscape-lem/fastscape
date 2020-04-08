@@ -21,12 +21,12 @@ class BaseIsostasy:
     :func:`xsimlab.foreign`.
 
     """
-    # TODO: group=['bedrock_upward', 'surface_upward']
+    # TODO: groups=['bedrock_upward', 'surface_upward']
     # see https://github.com/benbovy/xarray-simlab/issues/64
     rebound = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='any_upward',
+        groups='any_upward',
         description='isostasic rebound due to material loading/unloading'
     )
 

@@ -24,14 +24,14 @@ class TectonicForcing:
     bedrock_upward = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='bedrock_upward',
+        groups='bedrock_upward',
         description='imposed vertical motion of bedrock surface'
     )
 
     surface_upward = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='surface_upward',
+        groups='surface_upward',
         description='imposed vertical motion of topographic surface'
     )
 
@@ -92,12 +92,12 @@ class BlockUplift:
     status = xs.foreign(BorderBoundary, 'border_status')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
-    # TODO: group=['bedrock_forcing_upward', 'surface_forcing_upward']
+    # TODO: groups=['bedrock_forcing_upward', 'surface_forcing_upward']
     # see https://github.com/benbovy/xarray-simlab/issues/64
     uplift = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='any_forcing_upward',
+        groups='any_forcing_upward',
         description='imposed vertical uplift'
     )
 
@@ -139,12 +139,12 @@ class TwoBlocksUplift:
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     x = xs.foreign(UniformRectilinearGrid2D, 'x')
 
-    # TODO: group=['bedrock_forcing_upward', 'surface_forcing_upward']
+    # TODO: groups=['bedrock_forcing_upward', 'surface_forcing_upward']
     # see https://github.com/benbovy/xarray-simlab/issues/64
     uplift = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='any_forcing_upward',
+        groups='any_forcing_upward',
         description='imposed vertical uplift'
     )
 
@@ -183,14 +183,14 @@ class HorizontalAdvection:
     bedrock_veffect = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='bedrock_forcing_upward',
+        groups='bedrock_forcing_upward',
         description='vertical effect of advection on bedrock surface'
     )
 
     surface_veffect = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='surface_forcing_upward',
+        groups='surface_forcing_upward',
         description='vertical effect of advection on topographic surface'
     )
 

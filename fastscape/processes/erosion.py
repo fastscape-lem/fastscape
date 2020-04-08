@@ -20,7 +20,7 @@ class TotalErosion:
         dims=[(), ('y', 'x')],
         intent='out',
         description='total erosion height at current step',
-        group='surface_downward'
+        groups='surface_downward'
     )
 
     rate = xs.on_demand(
