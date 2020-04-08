@@ -126,7 +126,8 @@ class TwoBlocksUplift:
 
     """
     x_position = xs.variable(
-        description='position of the clip plane along the x-axis'
+        description='position of the clip plane along the x-axis',
+        static=True
     )
 
     rate_left = xs.variable(

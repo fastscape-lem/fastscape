@@ -139,7 +139,10 @@ class MultipleFlowRouter(FlowRouter):
     slope exponent.
 
     """
-    slope_exp = xs.variable(description='MFD partioner slope exponent')
+    slope_exp = xs.variable(
+        description='MFD partioner slope exponent',
+        static=True
+    )
 
     def initialize(self):
         self.fs_context.p = self.slope_exp
