@@ -14,7 +14,7 @@ class TotalVerticalMotion:
     feedback of erosion on tectonics (isostasy).
 
     """
-    #TODO: remove any_upward_vars
+    # TODO: remove any_upward_vars
     # see https://github.com/benbovy/xarray-simlab/issues/64
     any_upward_vars = xs.group('any_upward')
     bedrock_upward_vars = xs.group('bedrock_upward')
@@ -109,7 +109,7 @@ class Bedrock:
 
     @depth.compute
     def _depth(self):
-        return self.surf_elevation - self.elevation
+        return self.surface_elevation - self.elevation
 
     def initialize(self):
         if np.any(self.elevation > self.surface_elevation):
