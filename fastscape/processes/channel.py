@@ -23,7 +23,7 @@ class ChannelErosion:
     erosion = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='erosion',
+        groups='erosion',
         description='channel erosion and/or deposition'
     )
 

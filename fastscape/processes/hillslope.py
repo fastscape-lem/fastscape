@@ -18,7 +18,7 @@ class LinearDiffusion:
     erosion = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='erosion'
+        groups='erosion'
     )
 
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')

@@ -15,23 +15,20 @@ class TectonicForcing:
     surface, respectively.
 
     """
-    #TODO: remove any_forcing_vars
-    # see https://github.com/benbovy/xarray-simlab/issues/64
-    any_forcing_vars = xs.group('any_forcing_upward')
     bedrock_forcing_vars = xs.group('bedrock_forcing_upward')
     surface_forcing_vars = xs.group('surface_forcing_upward')
 
     bedrock_upward = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='bedrock_upward',
+        groups='bedrock_upward',
         description='imposed vertical motion of bedrock surface'
     )
 
     surface_upward = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='surface_upward',
+        groups='surface_upward',
         description='imposed vertical motion of topographic surface'
     )
 
@@ -45,10 +42,8 @@ class TectonicForcing:
     def run_step(self, dt):
         self._dt = dt
 
-        sum_any = sum(self.any_forcing_vars)
-
-        self.bedrock_upward = sum_any + sum(self.bedrock_forcing_vars)
-        self.surface_upward = sum_any + sum(self.surface_forcing_vars)
+        self.bedrock_upward = sum(self.bedrock_forcing_vars)
+        self.surface_upward = sum(self.surface_forcing_vars)
 
     @domain_rate.compute
     def _domain_rate(self):
@@ -92,12 +87,10 @@ class BlockUplift:
     status = xs.foreign(BorderBoundary, 'border_status')
     fs_context = xs.foreign(FastscapelibContext, 'context')
 
-    # TODO: group=['bedrock_forcing_upward', 'surface_forcing_upward']
-    # see https://github.com/benbovy/xarray-simlab/issues/64
     uplift = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='any_forcing_upward',
+        groups=['bedrock_forcing_upward', 'surface_forcing_upward'],
         description='imposed vertical uplift'
     )
 
@@ -139,12 +132,10 @@ class TwoBlocksUplift:
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     x = xs.foreign(UniformRectilinearGrid2D, 'x')
 
-    # TODO: group=['bedrock_forcing_upward', 'surface_forcing_upward']
-    # see https://github.com/benbovy/xarray-simlab/issues/64
     uplift = xs.variable(
         dims=[(), ('y', 'x')],
         intent='out',
-        group='any_forcing_upward',
+        groups=['bedrock_forcing_upward', 'surface_forcing_upward'],
         description='imposed vertical uplift'
     )
 
@@ -183,14 +174,14 @@ class HorizontalAdvection:
     bedrock_veffect = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='bedrock_forcing_upward',
+        groups='bedrock_forcing_upward',
         description='vertical effect of advection on bedrock surface'
     )
 
     surface_veffect = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        group='surface_forcing_upward',
+        groups='surface_forcing_upward',
         description='vertical effect of advection on topographic surface'
     )
 

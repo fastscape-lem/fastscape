@@ -19,9 +19,8 @@ def test_total_vertical_motion():
     bedrock_advect = np.random.uniform(size=grid_shape)
     surf_advect = np.random.uniform(size=grid_shape)
 
-    p = TotalVerticalMotion(any_upward_vars=[uplift, isostasy],
-                            bedrock_upward_vars=[bedrock_advect],
-                            surface_upward_vars=[surf_advect],
+    p = TotalVerticalMotion(bedrock_upward_vars=[uplift, isostasy, bedrock_advect],
+                            surface_upward_vars=[uplift, isostasy, surf_advect],
                             surface_downward_vars=[erosion1, erosion2])
 
     p.run_step()

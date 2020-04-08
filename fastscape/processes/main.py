@@ -14,9 +14,6 @@ class TotalVerticalMotion:
     feedback of erosion on tectonics (isostasy).
 
     """
-    # TODO: remove any_upward_vars
-    # see https://github.com/benbovy/xarray-simlab/issues/64
-    any_upward_vars = xs.group('any_upward')
     bedrock_upward_vars = xs.group('bedrock_upward')
     surface_upward_vars = xs.group('surface_upward')
     surface_downward_vars = xs.group('surface_downward')
@@ -33,12 +30,9 @@ class TotalVerticalMotion:
     )
 
     def run_step(self):
-        sum_any = sum(self.any_upward_vars)
+        self.bedrock_upward = sum(self.bedrock_upward_vars)
 
-        self.bedrock_upward = sum_any + sum(self.bedrock_upward_vars)
-
-        self.surface_upward = (sum_any +
-                               sum(self.surface_upward_vars) -
+        self.surface_upward = (sum(self.surface_upward_vars) -
                                sum(self.surface_downward_vars))
 
 
