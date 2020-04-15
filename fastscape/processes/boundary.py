@@ -39,4 +39,4 @@ class BorderBoundary:
         # different border order
         self.ibc = sum(arr_bc * np.array([1, 100, 10, 1000]))
 
-        self.fs_context.ibc = self.ibc
+        self.fs_context["ibc"] = self.ibc

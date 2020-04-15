@@ -52,40 +52,40 @@ class StreamPowerChannel(ChannelErosion):
 
     def _set_g_in_context(self):
         # transport/deposition feature is exposed in subclasses
-        self.fs_context.g1 = 0.
-        self.fs_context.g2 = 0.
+        self.fs_context["g1"] = 0.
+        self.fs_context["g2"] = 0.
 
     def run_step(self):
         kf = np.broadcast_to(self.k_coef, self.shape).flatten()
-        self.fs_context.kf = kf
+        self.fs_context["kf"] = kf
 
         # we don't use kfsed fastscapelib-fortran feature directly
-        self.fs_context.kfsed = -1.
+        self.fs_context["kfsed"] = -1.
 
         self._set_g_in_context()
 
-        self.fs_context.m = self.area_exp
-        self.fs_context.n = self.slope_exp
+        self.fs_context["m"] = self.area_exp
+        self.fs_context["n"] = self.slope_exp
 
         # bypass fastscapelib_fortran global state
-        self.fs_context.h = self.elevation.flatten()
+        self.fs_context["h"] = self.elevation.flatten()
 
         # TODO: https://github.com/fastscape-lem/fastscapelib-fortran/pull/25
         # this has no effect yet.
-        self.fs_context.a = self.flowacc.flatten()
+        self.fs_context["a"] = self.flowacc.flatten()
 
         if self.receivers.ndim == 1:
             fs.streampowerlawsingleflowdirection()
         else:
             fs.streampowerlaw()
 
-        erosion_flat = self.elevation.ravel() - self.fs_context.h
+        erosion_flat = self.elevation.ravel() - self.fs_context["h"]
         self.erosion = erosion_flat.reshape(self.shape)
 
     @chi.compute
     def _chi(self):
         chi_arr = np.empty_like(self.elevation, dtype='d')
-        self.fs_context.copychi(chi_arr.ravel())
+        self.fs_context["copychi"](chi_arr.ravel())
 
         return chi_arr
 
@@ -139,8 +139,8 @@ class StreamPowerChannelTD(StreamPowerChannel):
 
     def _set_g_in_context(self):
         # TODO: set g instead
-        self.fs_context.g1 = self.g_coef
-        self.fs_context.g2 = -1.
+        self.fs_context["g1"] = self.g_coef
+        self.fs_context["g2"] = -1.
 
 
 @xs.process
@@ -175,8 +175,8 @@ class DifferentialStreamPowerChannelTD(DifferentialStreamPowerChannel):
 
     def _set_g_in_context(self):
         # TODO: set g instead
-        self.fs_context.g1 = self.g_coef_bedrock
-        self.fs_context.g2 = self.g_coef_soil
+        self.fs_context["g1"] = self.g_coef_bedrock
+        self.fs_context["g2"] = self.g_coef_soil
 
     def run_step(self):
         self.g_coef = np.where(self.active_layer_thickness <= 0.,

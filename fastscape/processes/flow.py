@@ -77,24 +77,24 @@ class FlowRouter:
 
     def run_step(self):
         # bypass fastscapelib_fortran global state
-        self.fs_context.h = self.elevation.ravel()
+        self.fs_context["h"] = self.elevation.ravel()
 
         self.route_flow()
 
-        self.nb_donors = self.fs_context.ndon.astype('int')
+        self.nb_donors = self.fs_context["ndon"].astype('int')
         # Fortran 1 vs Python 0 index
-        self.donors = self.fs_context.don.astype('int') - 1
+        self.donors = self.fs_context["don"].astype('int') - 1
 
     @basin.compute
     def _basin(self):
-        catch = self.fs_context.catch.reshape(self.shape)
+        catch = self.fs_context["catch"].reshape(self.shape)
 
         # storing basin ids as integers is safer
         return (catch * catch.size).astype(np.int)
 
     @lake_depth.compute
     def _lake_depth(self):
-        return self.fs_context.lake_depth.reshape(self.shape).copy()
+        return self.fs_context["lake_depth"].reshape(self.shape).copy()
 
 
 @xs.process
@@ -108,16 +108,16 @@ class SingleFlowRouter(FlowRouter):
 
     def initialize(self):
         # for compatibility
-        self.nb_receivers = np.ones_like(self.fs_context.rec)
-        self.weights = np.ones_like(self.fs_context.length)
+        self.nb_receivers = np.ones_like(self.fs_context["rec"])
+        self.weights = np.ones_like(self.fs_context["length"])
 
     def route_flow(self):
         fs.flowroutingsingleflowdirection()
 
         # Fortran 1 vs Python 0 index
-        self.stack = self.fs_context.stack.astype('int') - 1
-        self.receivers = self.fs_context.rec - 1
-        self.lengths = self.fs_context.length
+        self.stack = self.fs_context["stack"].astype('int') - 1
+        self.receivers = self.fs_context["rec"] - 1
+        self.lengths = self.fs_context["length"]
 
     @slope.compute
     def _slope(self):
@@ -145,17 +145,17 @@ class MultipleFlowRouter(FlowRouter):
     )
 
     def initialize(self):
-        self.fs_context.p = self.slope_exp
+        self.fs_context["p"] = self.slope_exp
 
     def route_flow(self):
         fs.flowrouting()
 
         # Fortran 1 vs Python 0 index | Fortran col vs Python row layout
-        self.stack = self.fs_context.mstack.astype('int') - 1
-        self.nb_receivers = self.fs_context.mnrec.astype('int')
-        self.receivers = self.fs_context.mrec.astype('int').transpose() - 1
-        self.lengths = self.fs_context.mlrec.transpose()
-        self.weights = self.fs_context.mwrec.transpose()
+        self.stack = self.fs_context["mstack"].astype('int') - 1
+        self.nb_receivers = self.fs_context["mnrec"].astype('int')
+        self.receivers = self.fs_context["mrec"].astype('int').transpose() - 1
+        self.lengths = self.fs_context["mlrec"].transpose()
+        self.weights = self.fs_context["mwrec"].transpose()
 
 
 @xs.process
@@ -170,7 +170,7 @@ class AdaptiveFlowRouter(MultipleFlowRouter):
 
     def initialize(self):
         # this is defined like that in fastscapelib-fortran
-        self.fs_context.p = -1.
+        self.fs_context["p"] = -1.
 
     @slope_exp.compute
     def _slope_exp(self):

@@ -186,17 +186,17 @@ class HorizontalAdvection:
     )
 
     def run_step(self):
-        self.fs_context.vx = np.broadcast_to(self.u, self.shape).flatten()
-        self.fs_context.vy = np.broadcast_to(self.v, self.shape).flatten()
+        self.fs_context["vx"] = np.broadcast_to(self.u, self.shape).flatten()
+        self.fs_context["vy"] = np.broadcast_to(self.v, self.shape).flatten()
 
         # bypass fastscapelib-fortran state
-        self.fs_context.h = self.surface_elevation.flatten()
-        self.fs_context.b = self.bedrock_elevation.flatten()
+        self.fs_context["h"] = self.surface_elevation.flatten()
+        self.fs_context["b"] = self.bedrock_elevation.flatten()
 
         fs.advect()
 
-        h_advected = self.fs_context.h.reshape(self.shape)
+        h_advected = self.fs_context["h"].reshape(self.shape)
         self.surface_veffect = h_advected - self.surface_elevation
 
-        b_advected = self.fs_context.b.reshape(self.shape)
+        b_advected = self.fs_context["b"].reshape(self.shape)
         self.bedrock_veffect = b_advected - self.bedrock_elevation
