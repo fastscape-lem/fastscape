@@ -28,8 +28,7 @@ class FastscapelibContext:
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     length = xs.foreign(UniformRectilinearGrid2D, 'length')
 
-    context = xs.variable(
-        intent='out',
+    context = xs.any_object(
         description='accessor to fastscapelib-fortran internal variables'
     )
 
