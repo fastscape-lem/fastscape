@@ -83,31 +83,31 @@ class MarineSedimentTransport:
 
     def initialize(self):
         # needed so that channel erosion/transport is disabled below sealevel
-        self.fs_context.runmarine = True
+        self.fs_context["runmarine"] = True
 
     def run_step(self):
-        self.fs_context.ratio = self.ss_ratio_land
+        self.fs_context["ratio"] = self.ss_ratio_land
 
-        self.fs_context.poro1 = self.porosity_sand
-        self.fs_context.poro2 = self.porosity_silt
+        self.fs_context["poro1"] = self.porosity_sand
+        self.fs_context["poro2"] = self.porosity_silt
 
-        self.fs_context.zporo1 = self.e_depth_sand
-        self.fs_context.zporo2 = self.e_depth_silt
+        self.fs_context["zporo1"] = self.e_depth_sand
+        self.fs_context["zporo2"] = self.e_depth_silt
 
-        self.fs_context.kdsea1 = self.diffusivity_sand
-        self.fs_context.kdsea2 = self.diffusivity_silt
+        self.fs_context["kdsea1"] = self.diffusivity_sand
+        self.fs_context["kdsea2"] = self.diffusivity_silt
 
-        self.fs_context.layer = self.layer_depth
+        self.fs_context["layer"] = self.layer_depth
 
-        self.fs_context.sealevel = self.sea_level
-        self.fs_context.Sedflux = self.sediment_source.ravel()
+        self.fs_context["sealevel"] = self.sea_level
+        self.fs_context["Sedflux"] = self.sediment_source.ravel()
 
         # bypass fastscapelib-fortran global state
-        self.fs_context.h = self.elevation.flatten()
+        self.fs_context["h"] = self.elevation.flatten()
 
         fs.marine()
 
-        erosion_flat = self.elevation.ravel() - self.fs_context.h
+        erosion_flat = self.elevation.ravel() - self.fs_context["h"]
         self.erosion = erosion_flat.reshape(self.shape)
 
-        self.ss_ratio_sea = self.fs_context.fmix.copy().reshape(self.shape)
+        self.ss_ratio_sea = self.fs_context["fmix"].copy().reshape(self.shape)

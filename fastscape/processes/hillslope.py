@@ -27,18 +27,18 @@ class LinearDiffusion:
 
     def run_step(self):
         kd = np.broadcast_to(self.diffusivity, self.shape).flatten()
-        self.fs_context.kd = kd
+        self.fs_context["kd"] = kd
 
         # we don't use the kdsed fastscapelib-fortran feature directly
         # see class DifferentialLinearDiffusion
-        self.fs_context.kdsed = -1.
+        self.fs_context["kdsed"] = -1.
 
         # bypass fastscapelib-fortran global state
-        self.fs_context.h = self.elevation.flatten()
+        self.fs_context["h"] = self.elevation.flatten()
 
         fs.diffusion()
 
-        erosion_flat = self.elevation.ravel() - self.fs_context.h
+        erosion_flat = self.elevation.ravel() - self.fs_context["h"]
         self.erosion = erosion_flat.reshape(self.shape)
 
 
