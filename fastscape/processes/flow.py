@@ -138,8 +138,12 @@ class MultipleFlowRouter(FlowRouter):
     """Multiple direction (convergent/divergent) flow router with uniform
     slope exponent.
 
+    By default, the slope exponent equals zero, i.e., the amount of flow is
+    distributed evenly among the flow receivers.
+
     """
     slope_exp = xs.variable(
+        default=0.,
         description='MFD partioner slope exponent',
         static=True
     )
