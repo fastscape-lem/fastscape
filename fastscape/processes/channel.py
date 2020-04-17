@@ -36,8 +36,14 @@ class StreamPowerChannel(ChannelErosion):
         dims=[(), ('y', 'x')],
         description='bedrock channel incision coefficient'
     )
-    area_exp = xs.variable(description='drainage area exponent')
-    slope_exp = xs.variable(description='slope exponent')
+    area_exp = xs.variable(
+        default=0.4,
+        description='drainage area exponent'
+    )
+    slope_exp = xs.variable(
+        default=1,
+        description='slope exponent'
+    )
 
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     elevation = xs.foreign(FlowRouter, 'elevation')
