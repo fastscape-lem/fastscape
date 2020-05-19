@@ -10,6 +10,6 @@ dependencies:
   - nbconvert=5.6.0
   - sphinx=1.8.5
   - pandoc=2.7.3
-  - fastscapelib-f2py=2.8.1
+  - fastscapelib-f2py=2.8.2
   - numba=0.45.1
   - sphinx_rtd_theme
