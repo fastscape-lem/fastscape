@@ -75,9 +75,6 @@ class StreamPowerChannel(ChannelErosion):
 
         # bypass fastscapelib_fortran global state
         self.fs_context["h"] = self.elevation.flatten()
-
-        # TODO: https://github.com/fastscape-lem/fastscapelib-fortran/pull/25
-        # this has no effect yet.
         self.fs_context["a"] = self.flowacc.flatten()
 
         if self.receivers.ndim == 1:

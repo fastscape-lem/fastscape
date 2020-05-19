@@ -3,8 +3,6 @@ import warnings
 import numpy as np
 import xsimlab as xs
 
-from .context import FastscapelibContext
-
 
 @xs.process
 class BorderBoundary:
@@ -46,8 +44,6 @@ class BorderBoundary:
         intent='out',
         description='node status at the 4-border boundaries'
     )
-
-    fs_context = xs.foreign(FastscapelibContext, 'context')
 
     ibc = xs.variable(
         intent='out',
@@ -107,5 +103,3 @@ class BorderBoundary:
 
         # different border order
         self.ibc = sum(arr_bc * np.array([1, 100, 10, 1000]))
-
-        self.fs_context["ibc"] = self.ibc
