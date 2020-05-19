@@ -3,6 +3,7 @@ import numpy as np
 import xsimlab as xs
 
 from .grid import UniformRectilinearGrid2D
+from .boundary import BorderBoundary
 
 
 class SerializableFastscapeContext:
@@ -27,6 +28,7 @@ class FastscapelibContext:
     """
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     length = xs.foreign(UniformRectilinearGrid2D, 'length')
+    ibc = xs.foreign(BorderBoundary, 'ibc')
 
     context = xs.any_object(
         description='accessor to fastscapelib-fortran internal variables'
@@ -37,6 +39,8 @@ class FastscapelibContext:
         fs.fastscape_set_nx_ny(*np.flip(self.shape))
         fs.fastscape_setup()
         fs.fastscape_set_xl_yl(*np.flip(self.length))
+
+        fs.fastscape_set_bc(self.ibc)
 
         self.context = SerializableFastscapeContext()
 
