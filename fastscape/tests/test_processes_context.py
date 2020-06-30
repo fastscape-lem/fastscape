@@ -3,7 +3,7 @@ from fastscape.processes.context import FastscapelibContext
 
 def test_fastscapelib_context():
 
-    p = FastscapelibContext(shape=(3, 4), length=(10., 30.))
+    p = FastscapelibContext(shape=(3, 4), length=(10., 30.), ibc=1010)
 
     p.initialize()
 
