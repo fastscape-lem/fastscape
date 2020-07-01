@@ -1,5 +1,4 @@
 import numpy as np
-import xsimlab as xs
 
 import pytest
 
