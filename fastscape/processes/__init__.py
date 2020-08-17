@@ -9,8 +9,7 @@ from .flow import (DrainageArea,
                    FlowAccumulator,
                    FlowRouter,
                    SingleFlowRouter,
-                   MultipleFlowRouter,
-                   AdaptiveFlowRouter)
+                   MultipleFlowRouter)
 from .grid import RasterGrid2D, UniformRectilinearGrid2D
 from .hillslope import LinearDiffusion, DifferentialLinearDiffusion
 from .initial import (BareRockSurface,

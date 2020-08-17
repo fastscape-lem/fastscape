@@ -163,29 +163,6 @@ class MultipleFlowRouter(FlowRouter):
         self.weights = self.fs_context["mwrec"].transpose()
 
 
-@xs.process
-class AdaptiveFlowRouter(MultipleFlowRouter):
-    """Multiple direction (convergent/divergent) flow router where the
-    slope exponent is itself a function of slope.
-
-    slope_exp = 0.5 + 0.6 * slope
-
-    """
-    slope_exp = xs.on_demand(description='MFD partioner slope exponent')
-
-    def initialize(self):
-        # this is defined like that in fastscapelib-fortran
-        self.fs_context["p"] = -1.
-
-    @slope_exp.compute
-    def _slope_exp(self):
-        # see https://github.com/fastscape-lem/fastscapelib-fortran/issues/24
-        warnings.warn("'AdaptiveFlowRouter.slope_exp' "
-                      "has no meaningful value.",
-                      UserWarning)
-        return -1
-
-
 # TODO: remove when possible to use fastscapelib-fortran
 # see https://github.com/fastscape-lem/fastscapelib-fortran/issues/24
 @numba.njit
