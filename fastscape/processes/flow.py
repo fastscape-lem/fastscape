@@ -143,13 +143,14 @@ class MultipleFlowRouter(FlowRouter):
 
     """
     slope_exp = xs.variable(
+        dims=[(), ('y', 'x')],
         default=0.,
         description='MFD partioner slope exponent',
         static=True
     )
 
     def initialize(self):
-        self.fs_context["p"] = self.slope_exp
+        self.fs_context["p_mfd_exp"] = np.broadcast_to(self.slope_exp, self.shape).flatten()
 
     def route_flow(self):
         fs.flowrouting()
