@@ -143,13 +143,14 @@ class MultipleFlowRouter(FlowRouter):
 
     """
     slope_exp = xs.variable(
+        dims=[(), ('y', 'x')],
         default=0.,
         description='MFD partioner slope exponent',
         static=True
     )
 
     def initialize(self):
-        self.fs_context["p"] = self.slope_exp
+        self.fs_context["p_mfd_exp"] = np.broadcast_to(self.slope_exp, self.shape).flatten()
 
     def route_flow(self):
         fs.flowrouting()
@@ -160,29 +161,6 @@ class MultipleFlowRouter(FlowRouter):
         self.receivers = self.fs_context["mrec"].astype('int').transpose() - 1
         self.lengths = self.fs_context["mlrec"].transpose()
         self.weights = self.fs_context["mwrec"].transpose()
-
-
-@xs.process
-class AdaptiveFlowRouter(MultipleFlowRouter):
-    """Multiple direction (convergent/divergent) flow router where the
-    slope exponent is itself a function of slope.
-
-    slope_exp = 0.5 + 0.6 * slope
-
-    """
-    slope_exp = xs.on_demand(description='MFD partioner slope exponent')
-
-    def initialize(self):
-        # this is defined like that in fastscapelib-fortran
-        self.fs_context["p"] = -1.
-
-    @slope_exp.compute
-    def _slope_exp(self):
-        # see https://github.com/fastscape-lem/fastscapelib-fortran/issues/24
-        warnings.warn("'AdaptiveFlowRouter.slope_exp' "
-                      "has no meaningful value.",
-                      UserWarning)
-        return -1
 
 
 # TODO: remove when possible to use fastscapelib-fortran
