@@ -12,11 +12,13 @@ class FlatSurface:
     random perturbations (white noise).
 
     """
+    seed = xs.variable(default=None, description='random seed')
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     elevation = xs.foreign(SurfaceTopography, 'elevation', intent='out')
 
     def initialize(self):
-        self.elevation = np.random.rand(*self.shape)
+        rs = np.random.RandomState(seed=self.seed)
+        self.elevation = rs.rand(*self.shape)
 
 
 @xs.process
