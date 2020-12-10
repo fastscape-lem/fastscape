@@ -83,7 +83,7 @@ class FlowRouter:
 
         self.nb_donors = self.fs_context["ndon"].astype('int')
         # Fortran 1 vs Python 0 index
-        self.donors = self.fs_context["don"].astype('int') - 1
+        self.donors = self.fs_context["don"].astype('int').transpose() - 1
 
     @basin.compute
     def _basin(self):
