@@ -18,7 +18,10 @@ class FlatSurface:
 
     def initialize(self):
         if self.seed is not None:
-            self.seed = int(self.seed)
+            if np.isnan(float(self.seed)):
+                self.seed = None
+            else:
+                self.seed = int(self.seed)
 
         rs = np.random.RandomState(seed=self.seed)
         self.elevation = rs.rand(*self.shape)
