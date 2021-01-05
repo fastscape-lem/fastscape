@@ -17,7 +17,10 @@ class FlatSurface:
     elevation = xs.foreign(SurfaceTopography, 'elevation', intent='out')
 
     def initialize(self):
-        rs = np.random.RandomState(seed=int(self.seed))
+        if self.seed is not None:
+            self.seed = int(self.seed)
+
+        rs = np.random.RandomState(seed=self.seed)
         self.elevation = rs.rand(*self.shape)
 
 
