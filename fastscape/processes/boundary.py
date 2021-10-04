@@ -102,4 +102,4 @@ class BorderBoundary:
                            for st in self.border_status])
 
         # different border order
-        self.ibc = sum(arr_bc * np.array([1, 100, 10, 1000]))
+        self.ibc = sum(arr_bc * np.array([1, 100, 1000, 10]))
