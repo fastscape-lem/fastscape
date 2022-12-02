@@ -45,6 +45,19 @@ class StreamPowerChannel(ChannelErosion):
         description='slope exponent'
     )
 
+    tol_rel = xs.variable(
+        default=1e-4,
+        description='relative tolerance (Gauss-Siedel convergence)'
+    )
+    tol_abs = xs.variable(
+        default=1e-4,
+        description='absolute tolerance (Gauss-Siedel convergence)'
+    )
+    max_iter = xs.variable(
+        default=100,
+        description='max nb. of iterations (Gauss-Siedel convergence)'
+    )
+
     shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
     elevation = xs.foreign(FlowRouter, 'elevation')
     receivers = xs.foreign(FlowRouter, 'receivers')
@@ -61,6 +74,11 @@ class StreamPowerChannel(ChannelErosion):
         self.fs_context["g1"] = 0.
         self.fs_context["g2"] = 0.
 
+    def _set_tolerance(self):
+        self.fs_context["tol_rel"] = self.tol_rel
+        self.fs_context["tol_abs"] = self.tol_abs
+        self.fs_context["nGSStreamPowerLawMax"] = self.max_iter
+
     def run_step(self):
         kf = np.broadcast_to(self.k_coef, self.shape).flatten()
         self.fs_context["kf"] = kf
@@ -72,6 +90,9 @@ class StreamPowerChannel(ChannelErosion):
 
         self.fs_context["m"] = self.area_exp
         self.fs_context["n"] = self.slope_exp
+
+        # note: this is ignored in fastscapelib_fortran <2.8.3 !!
+        self._set_tolerance()
 
         # bypass fastscapelib_fortran global state
         self.fs_context["h"] = self.elevation.flatten()
