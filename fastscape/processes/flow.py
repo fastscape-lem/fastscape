@@ -90,7 +90,7 @@ class FlowRouter:
         catch = self.fs_context["catch"].reshape(self.shape)
 
         # storing basin ids as integers is safer
-        return (catch * catch.size).astype(np.int)
+        return (catch * catch.size).astype("int")
 
     @lake_depth.compute
     def _lake_depth(self):
