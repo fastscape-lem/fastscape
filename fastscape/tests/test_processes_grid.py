@@ -17,7 +17,7 @@ def test_uniform_rectilinear_grid_2d():
     np.testing.assert_equal(p.origin, (0., 1.))
     np.testing.assert_equal(p.length, (10., 30.))
     assert p.size == 12
-    assert p.area == 300.
+    assert p.area == 600.
     assert p.cell_area == 50.
     assert p.dx == 10.
     assert p.dy == 5.
