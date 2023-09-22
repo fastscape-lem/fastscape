@@ -32,6 +32,7 @@ classifiers = [
 requires-python = ">=3.9"
 dependencies = [
     "xarray-simlab >= 0.5.0",
+    "numba",
 ]
 
 [project.optional-dependencies]
