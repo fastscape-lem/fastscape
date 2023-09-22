@@ -67,8 +67,8 @@ class UniformRectilinearGrid2D:
     def initialize(self):
         self._set_length_or_spacing()
         self.size = np.prod(self.shape)
-        self.area = np.prod(self.length)
         self.cell_area = np.prod(self.spacing)
+        self.area = self.cell_area * self.size
 
         self.dx = self.spacing[1]
         self.dy = self.spacing[0]

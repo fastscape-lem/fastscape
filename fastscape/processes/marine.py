@@ -30,19 +30,19 @@ class MarineSedimentTransport:
     continental area, provides a volume of sediment yielded through
     the shoreline.
 
-    A uniform, user-defined ratio of sand/silt is considered for this
+    A uniform, user-defined ratio of silt/sand is considered for this
     sediment yield. Each of these grain size category has its own
     properties like porosity, the exponential decreasing of porosity
     with depth and the transport coefficient (diffusivity).
 
     """
     ss_ratio_land = xs.variable(
-        description='sand/silt ratio of continental sediment source'
+        description='silt fraction of continental sediment source'
     )
     ss_ratio_sea = xs.variable(
         dims=('y', 'x'),
         intent='out',
-        description='sand/silt ratio of marine sediment layer'
+        description='silt fraction of marine sediment layer'
     )
 
     porosity_sand = xs.variable(
@@ -91,14 +91,14 @@ class MarineSedimentTransport:
     def run_step(self):
         self.fs_context["ratio"] = self.ss_ratio_land
 
-        self.fs_context["poro1"] = self.porosity_sand
-        self.fs_context["poro2"] = self.porosity_silt
+        self.fs_context["poro2"] = self.porosity_sand
+        self.fs_context["poro1"] = self.porosity_silt
 
-        self.fs_context["zporo1"] = self.e_depth_sand
-        self.fs_context["zporo2"] = self.e_depth_silt
+        self.fs_context["zporo2"] = self.e_depth_sand
+        self.fs_context["zporo1"] = self.e_depth_silt
 
-        self.fs_context["kdsea1"] = self.diffusivity_sand
-        self.fs_context["kdsea2"] = self.diffusivity_silt
+        self.fs_context["kdsea2"] = self.diffusivity_sand
+        self.fs_context["kdsea1"] = self.diffusivity_silt
 
         self.fs_context["layer"] = self.layer_depth
 
