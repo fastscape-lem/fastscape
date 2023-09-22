@@ -5,8 +5,6 @@ Fastscape
 
 A fast, versatile and user-friendly landscape evolution model.
 
-**Note: this project is currently under heavy development.**
-
 Fastscape is a Python package that provides a lot a small model
 components (i.e., processes) to use with the xarray-simlab_ modeling
 framework. Those components can readily be combined together in order
