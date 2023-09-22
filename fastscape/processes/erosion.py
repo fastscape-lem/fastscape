@@ -8,33 +8,26 @@ from .grid import UniformRectilinearGrid2D
 class TotalErosion:
     """Sum up all erosion processes."""
 
-    erosion_vars = xs.group('erosion')
+    erosion_vars = xs.group("erosion")
 
     cumulative_height = xs.variable(
-        dims=[(), ('y', 'x')],
-        intent='inout',
-        description='erosion height accumulated over time'
+        dims=[(), ("y", "x")], intent="inout", description="erosion height accumulated over time"
     )
 
     height = xs.variable(
-        dims=[(), ('y', 'x')],
-        intent='out',
-        description='total erosion height at current step',
-        groups='surface_downward'
+        dims=[(), ("y", "x")],
+        intent="out",
+        description="total erosion height at current step",
+        groups="surface_downward",
     )
 
-    rate = xs.on_demand(
-        dims=[(), ('y', 'x')],
-        description='total erosion rate at current step'
-    )
+    rate = xs.on_demand(dims=[(), ("y", "x")], description="total erosion rate at current step")
 
-    grid_area = xs.foreign(UniformRectilinearGrid2D, 'area')
+    grid_area = xs.foreign(UniformRectilinearGrid2D, "area")
 
-    domain_rate = xs.on_demand(
-        description='domain-integrated volumetric erosion rate'
-    )
+    domain_rate = xs.on_demand(description="domain-integrated volumetric erosion rate")
 
-    @xs.runtime(args='step_delta')
+    @xs.runtime(args="step_delta")
     def run_step(self, dt):
         self._dt = dt
 

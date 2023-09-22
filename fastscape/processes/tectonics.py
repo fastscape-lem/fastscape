@@ -5,7 +5,7 @@ import xsimlab as xs
 from .boundary import BorderBoundary
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
-from .main import Bedrock, SurfaceTopography, SurfaceToErode
+from .main import Bedrock, SurfaceToErode, SurfaceTopography
 
 
 @xs.process
@@ -15,30 +15,29 @@ class TectonicForcing:
     surface, respectively.
 
     """
-    bedrock_forcing_vars = xs.group('bedrock_forcing_upward')
-    surface_forcing_vars = xs.group('surface_forcing_upward')
+
+    bedrock_forcing_vars = xs.group("bedrock_forcing_upward")
+    surface_forcing_vars = xs.group("surface_forcing_upward")
 
     bedrock_upward = xs.variable(
-        dims=[(), ('y', 'x')],
-        intent='out',
-        groups='bedrock_upward',
-        description='imposed vertical motion of bedrock surface'
+        dims=[(), ("y", "x")],
+        intent="out",
+        groups="bedrock_upward",
+        description="imposed vertical motion of bedrock surface",
     )
 
     surface_upward = xs.variable(
-        dims=[(), ('y', 'x')],
-        intent='out',
-        groups='surface_upward',
-        description='imposed vertical motion of topographic surface'
+        dims=[(), ("y", "x")],
+        intent="out",
+        groups="surface_upward",
+        description="imposed vertical motion of topographic surface",
     )
 
-    grid_area = xs.foreign(UniformRectilinearGrid2D, 'area')
+    grid_area = xs.foreign(UniformRectilinearGrid2D, "area")
 
-    domain_rate = xs.on_demand(
-        description='domain-integrated volumetric tectonic rate'
-    )
+    domain_rate = xs.on_demand(description="domain-integrated volumetric tectonic rate")
 
-    @xs.runtime(args='step_delta')
+    @xs.runtime(args="step_delta")
     def run_step(self, dt):
         self._dt = dt
 
@@ -56,14 +55,13 @@ class SurfaceAfterTectonics(SurfaceToErode):
     applying tectonic forcing.
 
     """
-    topo_elevation = xs.foreign(SurfaceTopography, 'elevation')
 
-    forced_motion = xs.foreign(TectonicForcing, 'surface_upward')
+    topo_elevation = xs.foreign(SurfaceTopography, "elevation")
+
+    forced_motion = xs.foreign(TectonicForcing, "surface_upward")
 
     elevation = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        description='surface elevation before erosion'
+        dims=("y", "x"), intent="out", description="surface elevation before erosion"
     )
 
     def run_step(self):
@@ -78,20 +76,18 @@ class BlockUplift:
     'fixed_value' boundary conditions are set.
 
     """
-    rate = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='uplift rate'
-    )
 
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    status = xs.foreign(BorderBoundary, 'border_status')
-    fs_context = xs.foreign(FastscapelibContext, 'context')
+    rate = xs.variable(dims=[(), ("y", "x")], description="uplift rate")
+
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    status = xs.foreign(BorderBoundary, "border_status")
+    fs_context = xs.foreign(FastscapelibContext, "context")
 
     uplift = xs.variable(
-        dims=[(), ('y', 'x')],
-        intent='out',
-        groups=['bedrock_forcing_upward', 'surface_forcing_upward'],
-        description='imposed vertical uplift'
+        dims=[(), ("y", "x")],
+        intent="out",
+        groups=["bedrock_forcing_upward", "surface_forcing_upward"],
+        description="imposed vertical uplift",
     )
 
     def initialize(self):
@@ -102,10 +98,10 @@ class BlockUplift:
         slices = [(_all, 0), (_all, -1), (0, _all), (-1, _all)]
 
         for status, border in zip(self.status, slices):
-            if status == 'fixed_value':
-                self._mask[border] = 0.
+            if status == "fixed_value":
+                self._mask[border] = 0.0
 
-    @xs.runtime(args='step_delta')
+    @xs.runtime(args="step_delta")
     def run_step(self, dt):
         rate = np.broadcast_to(self.rate, self.shape) * self._mask
 
@@ -118,36 +114,31 @@ class TwoBlocksUplift:
     uplift rates.
 
     """
-    x_position = xs.variable(
-        description='position of the clip plane along the x-axis',
-        static=True
-    )
 
-    rate_left = xs.variable(
-        description='uplift rate of the left block'
-    )
-    rate_right = xs.variable(
-        description='uplift rate of the right block')
+    x_position = xs.variable(description="position of the clip plane along the x-axis", static=True)
 
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    x = xs.foreign(UniformRectilinearGrid2D, 'x')
+    rate_left = xs.variable(description="uplift rate of the left block")
+    rate_right = xs.variable(description="uplift rate of the right block")
+
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    x = xs.foreign(UniformRectilinearGrid2D, "x")
 
     uplift = xs.variable(
-        dims=[(), ('y', 'x')],
-        intent='out',
-        groups=['bedrock_forcing_upward', 'surface_forcing_upward'],
-        description='imposed vertical uplift'
+        dims=[(), ("y", "x")],
+        intent="out",
+        groups=["bedrock_forcing_upward", "surface_forcing_upward"],
+        description="imposed vertical uplift",
     )
 
     def initialize(self):
         # align clip plane position
         self._x_idx = np.argmax(self.x > self.x_position)
 
-    @xs.runtime(args='step_delta')
+    @xs.runtime(args="step_delta")
     def run_step(self, dt):
         rate = np.full(self.shape, self.rate_left)
 
-        rate[:, self._x_idx:] = self.rate_right
+        rate[:, self._x_idx :] = self.rate_right
 
         self.uplift = rate * dt
 
@@ -156,33 +147,27 @@ class TwoBlocksUplift:
 class HorizontalAdvection:
     """Horizontal rock advection imposed by a velocity field."""
 
-    u = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='velocity field component in x-direction'
-    )
-    v = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='velocity field component in y-direction'
-    )
+    u = xs.variable(dims=[(), ("y", "x")], description="velocity field component in x-direction")
+    v = xs.variable(dims=[(), ("y", "x")], description="velocity field component in y-direction")
 
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    fs_context = xs.foreign(FastscapelibContext, 'context')
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    fs_context = xs.foreign(FastscapelibContext, "context")
 
-    bedrock_elevation = xs.foreign(Bedrock, 'elevation')
-    surface_elevation = xs.foreign(SurfaceTopography, 'elevation')
+    bedrock_elevation = xs.foreign(Bedrock, "elevation")
+    surface_elevation = xs.foreign(SurfaceTopography, "elevation")
 
     bedrock_veffect = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        groups='bedrock_forcing_upward',
-        description='vertical effect of advection on bedrock surface'
+        dims=("y", "x"),
+        intent="out",
+        groups="bedrock_forcing_upward",
+        description="vertical effect of advection on bedrock surface",
     )
 
     surface_veffect = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        groups='surface_forcing_upward',
-        description='vertical effect of advection on topographic surface'
+        dims=("y", "x"),
+        intent="out",
+        groups="surface_forcing_upward",
+        description="vertical effect of advection on topographic surface",
     )
 
     def run_step(self):

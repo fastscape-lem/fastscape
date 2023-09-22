@@ -1,7 +1,6 @@
 import fastscapelib_fortran as fs
 import xsimlab as xs
 
-
 from .channel import ChannelErosion
 from .context import FastscapelibContext
 from .grid import UniformRectilinearGrid2D
@@ -15,10 +14,7 @@ class Sea:
     # TODO: add diagnostics like shoreline extraction or
     # continental area vs. marine masks.
 
-    level = xs.variable(
-        default=0.,
-        description='sea level (elevation)'
-    )
+    level = xs.variable(default=0.0, description="sea level (elevation)")
 
 
 @xs.process
@@ -36,52 +32,35 @@ class MarineSedimentTransport:
     with depth and the transport coefficient (diffusivity).
 
     """
-    ss_ratio_land = xs.variable(
-        description='silt fraction of continental sediment source'
-    )
+
+    ss_ratio_land = xs.variable(description="silt fraction of continental sediment source")
     ss_ratio_sea = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        description='silt fraction of marine sediment layer'
+        dims=("y", "x"), intent="out", description="silt fraction of marine sediment layer"
     )
 
-    porosity_sand = xs.variable(
-        description='surface (reference) porosity of sand'
-    )
-    porosity_silt = xs.variable(
-        description='surface (reference) porosity of silt'
-    )
+    porosity_sand = xs.variable(description="surface (reference) porosity of sand")
+    porosity_silt = xs.variable(description="surface (reference) porosity of silt")
 
-    e_depth_sand = xs.variable(
-        description='e-folding depth of exp. porosity curve for sand'
-    )
-    e_depth_silt = xs.variable(
-        description='e-folding depth of exp. porosity curve for silt'
-    )
+    e_depth_sand = xs.variable(description="e-folding depth of exp. porosity curve for sand")
+    e_depth_silt = xs.variable(description="e-folding depth of exp. porosity curve for silt")
 
-    diffusivity_sand = xs.variable(
-        description='diffusivity (transport coefficient) for sand'
-    )
+    diffusivity_sand = xs.variable(description="diffusivity (transport coefficient) for sand")
 
-    diffusivity_silt = xs.variable(
-        description='diffusivity (transport coefficient) for silt'
-    )
+    diffusivity_silt = xs.variable(description="diffusivity (transport coefficient) for silt")
 
-    layer_depth = xs.variable(
-        description='mean depth (thickness) of marine active layer'
-    )
+    layer_depth = xs.variable(description="mean depth (thickness) of marine active layer")
 
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    fs_context = xs.foreign(FastscapelibContext, 'context')
-    elevation = xs.foreign(SurfaceToErode, 'elevation')
-    sediment_source = xs.foreign(ChannelErosion, 'erosion')
-    sea_level = xs.foreign(Sea, 'level')
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    fs_context = xs.foreign(FastscapelibContext, "context")
+    elevation = xs.foreign(SurfaceToErode, "elevation")
+    sediment_source = xs.foreign(ChannelErosion, "erosion")
+    sea_level = xs.foreign(Sea, "level")
 
     erosion = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        groups='erosion',
-        description='marine erosion or deposition of sand/silt'
+        dims=("y", "x"),
+        intent="out",
+        groups="erosion",
+        description="marine erosion or deposition of sand/silt",
     )
 
     def initialize(self):

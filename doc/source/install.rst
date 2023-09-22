@@ -38,8 +38,8 @@ consider using conda_ to install them::
 A good practice (especially for development purpose) is to install the packages
 in a separate environment, e.g. using conda::
 
-    $ conda create -n fastscape python=3.7 xarray-simlab fastscapelib-f2py -c conda-forge
-    $ source activate fastscape
+    $ conda create -n fastscape python xarray-simlab fastscapelib-f2py numba -c conda-forge
+    $ conda activate fastscape
 
 Then you can clone the ``fastscape`` git repository and install it
 using ``pip`` locally::
