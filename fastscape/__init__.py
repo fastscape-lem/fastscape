@@ -1,7 +1,12 @@
-from ._version import get_versions
+from importlib.metadata import PackageNotFoundError, version
 
-__version__ = get_versions()['version']
-del get_versions
+try:
+    __version__ = version("fastscape")
+except PackageNotFoundError:  # noqa
+    # package is not installed
+    pass
 
-from . import processes
-from . import models
+from fastscape import processes
+from fastscape import models
+
+__all__ = ["processes", "models"]
