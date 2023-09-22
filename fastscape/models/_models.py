@@ -1,30 +1,34 @@
 import xsimlab as xs
 
 from ..processes.boundary import BorderBoundary
-from ..processes.channel import (StreamPowerChannel,
-                                 DifferentialStreamPowerChannelTD)
+from ..processes.channel import DifferentialStreamPowerChannelTD, StreamPowerChannel
 from ..processes.context import FastscapelibContext
-from ..processes.flow import DrainageArea, SingleFlowRouter, MultipleFlowRouter
 from ..processes.erosion import TotalErosion
+from ..processes.flow import DrainageArea, MultipleFlowRouter, SingleFlowRouter
 from ..processes.grid import RasterGrid2D
-from ..processes.hillslope import LinearDiffusion, DifferentialLinearDiffusion
-from ..processes.initial import (BareRockSurface,
-                                 Escarpment,
-                                 FlatSurface,
-                                 NoErosionHistory)
-from ..processes.main import (Bedrock,
-                              StratigraphicHorizons,
-                              SurfaceTopography,
-                              SurfaceToErode,
-                              TerrainDerivatives,
-                              TotalVerticalMotion,
-                              UniformSedimentLayer)
+from ..processes.hillslope import DifferentialLinearDiffusion, LinearDiffusion
+from ..processes.initial import (
+    BareRockSurface,
+    Escarpment,
+    FlatSurface,
+    NoErosionHistory,
+)
+from ..processes.main import (
+    Bedrock,
+    StratigraphicHorizons,
+    SurfaceToErode,
+    SurfaceTopography,
+    TerrainDerivatives,
+    TotalVerticalMotion,
+    UniformSedimentLayer,
+)
 from ..processes.marine import MarineSedimentTransport, Sea
-from ..processes.tectonics import (BlockUplift,
-                                   SurfaceAfterTectonics,
-                                   TectonicForcing,
-                                   TwoBlocksUplift)
-
+from ..processes.tectonics import (
+    BlockUplift,
+    SurfaceAfterTectonics,
+    TectonicForcing,
+    TwoBlocksUplift,
+)
 
 # ``bootstrap_model`` has the minimal set of processes required to
 # simulate on a 2D uniform grid the evolution of topographic surface
@@ -33,16 +37,18 @@ from ..processes.tectonics import (BlockUplift,
 # landscape evolution model and might be used as a basis to create
 # custom models.
 
-bootstrap_model = xs.Model({
-    'grid': RasterGrid2D,
-    'fs_context': FastscapelibContext,
-    'boundary': BorderBoundary,
-    'tectonics': TectonicForcing,
-    'surf2erode': SurfaceToErode,
-    'erosion': TotalErosion,
-    'vmotion': TotalVerticalMotion,
-    'topography': SurfaceTopography,
-})
+bootstrap_model = xs.Model(
+    {
+        "grid": RasterGrid2D,
+        "fs_context": FastscapelibContext,
+        "boundary": BorderBoundary,
+        "tectonics": TectonicForcing,
+        "surf2erode": SurfaceToErode,
+        "erosion": TotalErosion,
+        "vmotion": TotalVerticalMotion,
+        "topography": SurfaceTopography,
+    }
+)
 
 # ``basic_model`` is a "standard" landscape evolution model that
 # includes block uplift, (bedrock) channel erosion using the stream
@@ -53,17 +59,19 @@ bootstrap_model = xs.Model({
 # on a topographic surface that is first updated by tectonic forcing
 # processes.
 
-basic_model = bootstrap_model.update_processes({
-    'uplift': BlockUplift,
-    'surf2erode': SurfaceAfterTectonics,
-    'flow': SingleFlowRouter,
-    'drainage': DrainageArea,
-    'spl': StreamPowerChannel,
-    'diffusion': LinearDiffusion,
-    'terrain': TerrainDerivatives,
-    'init_topography': FlatSurface,
-    'init_erosion': NoErosionHistory
-})
+basic_model = bootstrap_model.update_processes(
+    {
+        "uplift": BlockUplift,
+        "surf2erode": SurfaceAfterTectonics,
+        "flow": SingleFlowRouter,
+        "drainage": DrainageArea,
+        "spl": StreamPowerChannel,
+        "diffusion": LinearDiffusion,
+        "terrain": TerrainDerivatives,
+        "init_topography": FlatSurface,
+        "init_erosion": NoErosionHistory,
+    }
+)
 
 # ``sediment_model`` is built on top of ``basic_model`` ; it tracks
 # the evolution of both the topographic surface and the bedrock,
@@ -75,14 +83,16 @@ basic_model = bootstrap_model.update_processes({
 # set for the erosion and transport coefficients (bedrock vs
 # soil/sediment).
 
-sediment_model = basic_model.update_processes({
-    'bedrock': Bedrock,
-    'active_layer': UniformSedimentLayer,
-    'init_bedrock': BareRockSurface,
-    'flow': MultipleFlowRouter,
-    'spl': DifferentialStreamPowerChannelTD,
-    'diffusion': DifferentialLinearDiffusion
-})
+sediment_model = basic_model.update_processes(
+    {
+        "bedrock": Bedrock,
+        "active_layer": UniformSedimentLayer,
+        "init_bedrock": BareRockSurface,
+        "flow": MultipleFlowRouter,
+        "spl": DifferentialStreamPowerChannelTD,
+        "diffusion": DifferentialLinearDiffusion,
+    }
+)
 
 # ``marine_model`` simulates the erosion, transport and deposition of
 # bedrock or sediment in both continental and submarine
@@ -93,10 +103,12 @@ sediment_model = basic_model.update_processes({
 # vs. marine environments. An additional process keeps track of a
 # fixed number of stratigraphic horizons over time.
 
-marine_model = sediment_model.update_processes({
-    'init_topography': Escarpment,
-    'uplift': TwoBlocksUplift,
-    'sea': Sea,
-    'marine': MarineSedimentTransport,
-    'strati': StratigraphicHorizons
-})
+marine_model = sediment_model.update_processes(
+    {
+        "init_topography": Escarpment,
+        "uplift": TwoBlocksUplift,
+        "sea": Sea,
+        "marine": MarineSedimentTransport,
+        "strati": StratigraphicHorizons,
+    }
+)

@@ -4,7 +4,7 @@ from fastscape.processes.context import FastscapelibContext
 
 
 @contextmanager
-def fastscape_context(shape=(3, 4), length=(10., 30.)):
+def fastscape_context(shape=(3, 4), length=(10.0, 30.0)):
     p = FastscapelibContext(shape=shape, length=length)
     p.initialize()
 

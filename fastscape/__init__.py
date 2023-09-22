@@ -6,7 +6,6 @@ except PackageNotFoundError:  # noqa
     # package is not installed
     pass
 
-from fastscape import processes
-from fastscape import models
+from fastscape import models, processes
 
 __all__ = ["processes", "models"]

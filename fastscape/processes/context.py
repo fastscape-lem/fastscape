@@ -2,8 +2,8 @@ import fastscapelib_fortran as fs
 import numpy as np
 import xsimlab as xs
 
-from .grid import UniformRectilinearGrid2D
 from .boundary import BorderBoundary
+from .grid import UniformRectilinearGrid2D
 
 
 class SerializableFastscapeContext:
@@ -26,13 +26,12 @@ class FastscapelibContext:
     state.
 
     """
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    length = xs.foreign(UniformRectilinearGrid2D, 'length')
-    ibc = xs.foreign(BorderBoundary, 'ibc')
 
-    context = xs.any_object(
-        description='accessor to fastscapelib-fortran internal variables'
-    )
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    length = xs.foreign(UniformRectilinearGrid2D, "length")
+    ibc = xs.foreign(BorderBoundary, "ibc")
+
+    context = xs.any_object(description="accessor to fastscapelib-fortran internal variables")
 
     def initialize(self):
         fs.fastscape_init()
@@ -44,7 +43,7 @@ class FastscapelibContext:
 
         self.context = SerializableFastscapeContext()
 
-    @xs.runtime(args='step_delta')
+    @xs.runtime(args="step_delta")
     def run_step(self, dt):
         # fastscapelib-fortran runtime routines use dt from context
         self.context["dt"] = dt
