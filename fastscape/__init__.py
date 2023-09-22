@@ -8,4 +8,4 @@ except PackageNotFoundError:  # noqa
 
 from fastscape import models, processes
 
-__all__ = ["processes", "models"]
+__all__ = ("processes", "models")

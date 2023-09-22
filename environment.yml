@@ -1,0 +1,9 @@
+name: fastscape-dev
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.9
+  - xarray-simlab
+  - fastscapelib-f2py
+  - pytest
+  - pip
