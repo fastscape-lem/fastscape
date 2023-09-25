@@ -5,8 +5,11 @@ requires = [
   "setuptools-scm>=7",
 ]
 
-[tool.setuptools]
-packages = ["fastscape"]
+[tool.setuptools.packages.find]
+include = [
+    "fastscape",
+    "fastscape.*",
+]
 
 [tool.setuptools_scm]
 fallback_version = "9999"
