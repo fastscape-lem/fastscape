@@ -1,13 +1,15 @@
 import numpy as np
 import pytest
 
-from fastscape.processes import (Bedrock,
-                                 SurfaceToErode,
-                                 SurfaceTopography,
-                                 StratigraphicHorizons,
-                                 TerrainDerivatives,
-                                 TotalVerticalMotion,
-                                 UniformSedimentLayer)
+from fastscape.processes import (
+    Bedrock,
+    StratigraphicHorizons,
+    SurfaceToErode,
+    SurfaceTopography,
+    TerrainDerivatives,
+    TotalVerticalMotion,
+    UniformSedimentLayer,
+)
 
 
 def test_total_vertical_motion():
@@ -19,9 +21,11 @@ def test_total_vertical_motion():
     bedrock_advect = np.random.uniform(size=grid_shape)
     surf_advect = np.random.uniform(size=grid_shape)
 
-    p = TotalVerticalMotion(bedrock_upward_vars=[uplift, isostasy, bedrock_advect],
-                            surface_upward_vars=[uplift, isostasy, surf_advect],
-                            surface_downward_vars=[erosion1, erosion2])
+    p = TotalVerticalMotion(
+        bedrock_upward_vars=[uplift, isostasy, bedrock_advect],
+        surface_upward_vars=[uplift, isostasy, surf_advect],
+        surface_downward_vars=[erosion1, erosion2],
+    )
 
     p.run_step()
 
@@ -59,36 +63,36 @@ def test_bedrock_error():
     surface_elevation = np.zeros_like(elevation)
 
     with pytest.raises(ValueError, match=r".* bedrock elevation higher .*"):
-        p = Bedrock(elevation=elevation,
-                    surface_elevation=surface_elevation,
-                    bedrock_motion_up=np.zeros_like(elevation),
-                    surface_motion_up=np.zeros_like(elevation))
+        p = Bedrock(
+            elevation=elevation,
+            surface_elevation=surface_elevation,
+            bedrock_motion_up=np.zeros_like(elevation),
+            surface_motion_up=np.zeros_like(elevation),
+        )
 
         p.initialize()
 
 
 def test_berock():
-    elevation = np.array([[0., 0., 0.],
-                          [2., 2., 2.]])
-    surface_elevation = np.array([[1., 1., 1.],
-                                  [2., 2., 2.]])
+    elevation = np.array([[0.0, 0.0, 0.0], [2.0, 2.0, 2.0]])
+    surface_elevation = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0]])
 
-    p = Bedrock(elevation=elevation,
-                bedrock_motion_up=np.full_like(elevation, 0.5),
-                surface_motion_up=np.full_like(elevation, -0.1),
-                surface_elevation=surface_elevation)
+    p = Bedrock(
+        elevation=elevation,
+        bedrock_motion_up=np.full_like(elevation, 0.5),
+        surface_motion_up=np.full_like(elevation, -0.1),
+        surface_elevation=surface_elevation,
+    )
 
     p.initialize()
     p.run_step()
 
-    expected = np.array([[1., 1., 1.],
-                         [0., 0., 0.]])
+    expected = np.array([[1.0, 1.0, 1.0], [0.0, 0.0, 0.0]])
     np.testing.assert_equal(p._depth(), expected)
 
     p.finalize_step()
 
-    expected = np.array([[0.5, 0.5, 0.5],
-                         [1.9, 1.9, 1.9]])
+    expected = np.array([[0.5, 0.5, 0.5], [1.9, 1.9, 1.9]])
     np.testing.assert_equal(p.elevation, expected)
 
 
@@ -98,8 +102,7 @@ def test_uniform_sediment_layer():
     surf_elevation = np.random.uniform(size=grid_shape) + 1
     expected = surf_elevation - bedrock_elevation
 
-    p = UniformSedimentLayer(bedrock_elevation=bedrock_elevation,
-                             surf_elevation=surf_elevation)
+    p = UniformSedimentLayer(bedrock_elevation=bedrock_elevation, surf_elevation=surf_elevation)
 
     p.initialize()
     np.testing.assert_equal(p.thickness, expected)
@@ -110,18 +113,15 @@ def test_uniform_sediment_layer():
 
 def test_terrain_derivatives():
     X, Y = np.meshgrid(np.linspace(-5, 5, 11), np.linspace(-5, 5, 21))
-    spacing = (0.5, 1.)  # note: dy, dx
+    spacing = (0.5, 1.0)  # note: dy, dx
 
     # test slope and curvature using parabola
     elevation = X**2 + Y**2
 
-    p = TerrainDerivatives(shape=elevation.shape,
-                           spacing=spacing,
-                           elevation=elevation)
+    p = TerrainDerivatives(shape=elevation.shape, spacing=spacing, elevation=elevation)
 
-    expected_slope = np.sqrt((2 * X)**2 + (2 * Y)**2)
-    expected_curvature = ((2 + 4 * X**2 + 4 * Y**2) /
-                          (1 + 4 * X**2 + 4 * Y**2)**1.5)
+    expected_slope = np.sqrt((2 * X) ** 2 + (2 * Y) ** 2)
+    expected_curvature = (2 + 4 * X**2 + 4 * Y**2) / (1 + 4 * X**2 + 4 * Y**2) ** 1.5
 
     def assert_skip_bounds(actual, expected):
         np.testing.assert_allclose(actual[1:-1, 1:-1], expected[1:-1, 1:-1])
@@ -136,34 +136,28 @@ def test_terrain_derivatives():
 
 
 def test_stratigraphic_horizons():
-    freeze_time = np.array([10., 20., 30.])
+    freeze_time = np.array([10.0, 20.0, 30.0])
 
-    surf_elevation = np.array([[1., 1., 1.],
-                               [2., 2., 2.]])
+    surf_elevation = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0]])
 
     p = StratigraphicHorizons(
         freeze_time=freeze_time,
         surf_elevation=surf_elevation,
-        bedrock_motion=np.array([[-0.2, -0.2, -0.2],
-                                 [0., 0., 0.]]),
-        elevation_motion=np.full_like(surf_elevation, -0.1)
+        bedrock_motion=np.array([[-0.2, -0.2, -0.2], [0.0, 0.0, 0.0]]),
+        elevation_motion=np.full_like(surf_elevation, -0.1),
     )
 
     with pytest.raises(ValueError, match=r"'freeze_time' value must be .*"):
         p.initialize(100)
 
-    p.initialize(10.)
+    p.initialize(10.0)
     assert p.elevation.shape == freeze_time.shape + surf_elevation.shape
     np.testing.assert_equal(p.horizon, np.array([0, 1, 2]))
     np.testing.assert_equal(p.active, np.array([True, True, True]))
 
-    p.run_step(25.)
+    p.run_step(25.0)
     p.finalize_step()
     np.testing.assert_equal(p.active, np.array([False, False, True]))
-    np.testing.assert_equal(p.elevation[2],
-                            np.array([[0.9, 0.9, 0.9],
-                                      [1.9, 1.9, 1.9]]))
+    np.testing.assert_equal(p.elevation[2], np.array([[0.9, 0.9, 0.9], [1.9, 1.9, 1.9]]))
     for i in [0, 1]:
-        np.testing.assert_equal(p.elevation[i],
-                                np.array([[0.8, 0.8, 0.8],
-                                          [1.9, 1.9, 1.9]]))
+        np.testing.assert_equal(p.elevation[i], np.array([[0.8, 0.8, 0.8], [1.9, 1.9, 1.9]]))

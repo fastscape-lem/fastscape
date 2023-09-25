@@ -20,11 +20,12 @@ class ChannelErosion:
     :func:`xsimlab.foreign`.
 
     """
+
     erosion = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        groups='erosion',
-        description='channel erosion and/or deposition'
+        dims=("y", "x"),
+        intent="out",
+        groups="erosion",
+        description="channel erosion and/or deposition",
     )
 
 
@@ -32,47 +33,28 @@ class ChannelErosion:
 class StreamPowerChannel(ChannelErosion):
     """Stream-Power channel erosion."""
 
-    k_coef = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='bedrock channel incision coefficient'
-    )
-    area_exp = xs.variable(
-        default=0.4,
-        description='drainage area exponent'
-    )
-    slope_exp = xs.variable(
-        default=1,
-        description='slope exponent'
-    )
+    k_coef = xs.variable(dims=[(), ("y", "x")], description="bedrock channel incision coefficient")
+    area_exp = xs.variable(default=0.4, description="drainage area exponent")
+    slope_exp = xs.variable(default=1, description="slope exponent")
 
-    tol_rel = xs.variable(
-        default=1e-4,
-        description='relative tolerance (Gauss-Siedel convergence)'
-    )
-    tol_abs = xs.variable(
-        default=1e-4,
-        description='absolute tolerance (Gauss-Siedel convergence)'
-    )
+    tol_rel = xs.variable(default=1e-4, description="relative tolerance (Gauss-Siedel convergence)")
+    tol_abs = xs.variable(default=1e-4, description="absolute tolerance (Gauss-Siedel convergence)")
     max_iter = xs.variable(
-        default=100,
-        description='max nb. of iterations (Gauss-Siedel convergence)'
+        default=100, description="max nb. of iterations (Gauss-Siedel convergence)"
     )
 
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    elevation = xs.foreign(FlowRouter, 'elevation')
-    receivers = xs.foreign(FlowRouter, 'receivers')
-    flowacc = xs.foreign(FlowAccumulator, 'flowacc')
-    fs_context = xs.foreign(FastscapelibContext, 'context')
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    elevation = xs.foreign(FlowRouter, "elevation")
+    receivers = xs.foreign(FlowRouter, "receivers")
+    flowacc = xs.foreign(FlowAccumulator, "flowacc")
+    fs_context = xs.foreign(FastscapelibContext, "context")
 
-    chi = xs.on_demand(
-        dims=('y', 'x'),
-        description='integrated drainage area (chi)'
-    )
+    chi = xs.on_demand(dims=("y", "x"), description="integrated drainage area (chi)")
 
     def _set_g_in_context(self):
         # transport/deposition feature is exposed in subclasses
-        self.fs_context["g1"] = 0.
-        self.fs_context["g2"] = 0.
+        self.fs_context["g1"] = 0.0
+        self.fs_context["g2"] = 0.0
 
     def _set_tolerance(self):
         self.fs_context["tol_rel"] = self.tol_rel
@@ -84,7 +66,7 @@ class StreamPowerChannel(ChannelErosion):
         self.fs_context["kf"] = kf
 
         # we don't use kfsed fastscapelib-fortran feature directly
-        self.fs_context["kfsed"] = -1.
+        self.fs_context["kfsed"] = -1.0
 
         self._set_g_in_context()
 
@@ -108,7 +90,7 @@ class StreamPowerChannel(ChannelErosion):
 
     @chi.compute
     def _chi(self):
-        chi_arr = np.empty_like(self.elevation, dtype='d')
+        chi_arr = np.empty_like(self.elevation, dtype="d")
         self.fs_context["copychi"](chi_arr.ravel())
 
         return chi_arr
@@ -123,29 +105,26 @@ class DifferentialStreamPowerChannel(StreamPowerChannel):
     layer.
 
     """
+
     k_coef_bedrock = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='bedrock channel incision coefficient'
+        dims=[(), ("y", "x")], description="bedrock channel incision coefficient"
     )
     k_coef_soil = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='soil (sediment) channel incision coefficient'
+        dims=[(), ("y", "x")], description="soil (sediment) channel incision coefficient"
     )
 
     k_coef = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        description='differential channel incision coefficient'
+        dims=("y", "x"), intent="out", description="differential channel incision coefficient"
     )
 
-    active_layer_thickness = xs.foreign(UniformSedimentLayer, 'thickness')
+    active_layer_thickness = xs.foreign(UniformSedimentLayer, "thickness")
 
     def run_step(self):
-        self.k_coef = np.where(self.active_layer_thickness <= 0.,
-                               self.k_coef_bedrock,
-                               self.k_coef_soil)
+        self.k_coef = np.where(
+            self.active_layer_thickness <= 0.0, self.k_coef_bedrock, self.k_coef_soil
+        )
 
-        super(DifferentialStreamPowerChannel, self).run_step()
+        super().run_step()
 
 
 @xs.process
@@ -157,14 +136,14 @@ class StreamPowerChannelTD(StreamPowerChannel):
     # - set self.get_context.g instead of g1 and g2
 
     g_coef = xs.variable(
-        #dims=[(), ('y', 'x')],
-        description='detached bedrock transport/deposition coefficient'
+        # dims=[(), ('y', 'x')],
+        description="detached bedrock transport/deposition coefficient"
     )
 
     def _set_g_in_context(self):
         # TODO: set g instead
         self.fs_context["g1"] = self.g_coef
-        self.fs_context["g2"] = -1.
+        self.fs_context["g2"] = -1.0
 
 
 @xs.process
@@ -177,24 +156,23 @@ class DifferentialStreamPowerChannelTD(DifferentialStreamPowerChannel):
     covered by a soil (sediment) layer.
 
     """
+
     # TODO: https://github.com/fastscape-lem/fastscapelib-fortran/pull/25
     # - update input var dimensions
     # - set self.get_context.g instead of g1 and g2
 
     g_coef_bedrock = xs.variable(
-        #dims=[(), ('y', 'x')],
-        description='detached bedrock transport/deposition coefficient'
+        # dims=[(), ('y', 'x')],
+        description="detached bedrock transport/deposition coefficient"
     )
 
     g_coef_soil = xs.variable(
-        #dims=[(), ('y', 'x')],
-        description='soil (sediment) transport/deposition coefficient'
+        # dims=[(), ('y', 'x')],
+        description="soil (sediment) transport/deposition coefficient"
     )
 
     g_coef = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        description='differential transport/deposition coefficient'
+        dims=("y", "x"), intent="out", description="differential transport/deposition coefficient"
     )
 
     def _set_g_in_context(self):
@@ -203,8 +181,8 @@ class DifferentialStreamPowerChannelTD(DifferentialStreamPowerChannel):
         self.fs_context["g2"] = self.g_coef_soil
 
     def run_step(self):
-        self.g_coef = np.where(self.active_layer_thickness <= 0.,
-                               self.g_coef_bedrock,
-                               self.g_coef_soil)
+        self.g_coef = np.where(
+            self.active_layer_thickness <= 0.0, self.g_coef_bedrock, self.g_coef_soil
+        )
 
-        super(DifferentialStreamPowerChannelTD, self).run_step()
+        super().run_step()

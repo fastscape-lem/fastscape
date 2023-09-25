@@ -12,9 +12,10 @@ class FlatSurface:
     random perturbations (white noise).
 
     """
-    seed = xs.variable(default=None, description='random seed')
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    elevation = xs.foreign(SurfaceTopography, 'elevation', intent='out')
+
+    seed = xs.variable(default=None, description="random seed")
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    elevation = xs.foreign(SurfaceTopography, "elevation", intent="out")
 
     def initialize(self):
         if self.seed is not None:
@@ -39,24 +40,20 @@ class Escarpment:
     elevation of each plateau.
 
     """
+
     x_left = xs.variable(
-        description="location of the scarp's left limit on the x-axis",
-        static=True
+        description="location of the scarp's left limit on the x-axis", static=True
     )
     x_right = xs.variable(
-        description="location of the scarp's right limit on the x-axis",
-        static=True
+        description="location of the scarp's right limit on the x-axis", static=True
     )
 
-    elevation_left = xs.variable(
-        description='elevation on the left side of the scarp'
-    )
-    elevation_right = xs.variable(
-        description='elevation on the right side of the scarp')
+    elevation_left = xs.variable(description="elevation on the left side of the scarp")
+    elevation_right = xs.variable(description="elevation on the right side of the scarp")
 
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    x = xs.foreign(UniformRectilinearGrid2D, 'x')
-    elevation = xs.foreign(SurfaceTopography, 'elevation', intent='out')
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    x = xs.foreign(UniformRectilinearGrid2D, "x")
+    elevation = xs.foreign(SurfaceTopography, "elevation", intent="out")
 
     def initialize(self):
         self.elevation = np.full(self.shape, self.elevation_left)
@@ -74,21 +71,19 @@ class Escarpment:
         scarp_width = self.x[idx_right] - self.x[idx_left]
 
         if scarp_width > 0:
-            scarp_height = (self.elevation_right - self.elevation_left)
+            scarp_height = self.elevation_right - self.elevation_left
             scarp_slope = scarp_height / scarp_width
             scarp_coord = self.x[idx_left:idx_right] - self.x[idx_left]
 
-            self.elevation[:, idx_left:idx_right] = (
-                self.elevation_left + scarp_slope * scarp_coord
-            )
+            self.elevation[:, idx_left:idx_right] = self.elevation_left + scarp_slope * scarp_coord
 
 
 @xs.process
 class BareRockSurface:
     """Initialize topographic surface as a bare rock surface."""
 
-    surf_elevation = xs.foreign(SurfaceTopography, 'elevation')
-    bedrock_elevation = xs.foreign(Bedrock, 'elevation', intent='out')
+    surf_elevation = xs.foreign(SurfaceTopography, "elevation")
+    bedrock_elevation = xs.foreign(Bedrock, "elevation", intent="out")
 
     def initialize(self):
         self.bedrock_elevation = self.surf_elevation.copy()
@@ -98,7 +93,7 @@ class BareRockSurface:
 class NoErosionHistory:
     """Initialize erosion to zero (no erosion history)."""
 
-    height = xs.foreign(TotalErosion, 'cumulative_height', intent='out')
+    height = xs.foreign(TotalErosion, "cumulative_height", intent="out")
 
     def initialize(self):
-        self.height = 0.
+        self.height = 0.0

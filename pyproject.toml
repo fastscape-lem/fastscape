@@ -1,0 +1,68 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools>=42",
+  "setuptools-scm>=7",
+]
+
+[tool.setuptools]
+packages = ["fastscape"]
+
+[tool.setuptools_scm]
+fallback_version = "9999"
+
+[project]
+name = "fastscape"
+dynamic = ["version"]
+authors = [
+    {name = "Benoît Bovy", email = "benbovy@gmail.com"},
+]
+maintainers = [
+    {name = "Fastscape contributors"},
+]
+license = {text = "BSD-3-Clause"}
+description = "A fast, versatile and user-friendly landscape evolution model"
+keywords = ["simulation", "toolkit", "modeling", "landscape", "geomorphology"]
+readme = "README.rst"
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "xarray-simlab >= 0.5.0",
+    "numba",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.urls]
+Documentation = "https://fastscape.readthedocs.io"
+Repository = "https://github.com/fastscape-lem/fastscape"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+# E402: module level import not at top of file
+# E501: line too long - let black worry about that
+# E731: do not assign a lambda expression, use a def
+ignore = [
+  "E402",
+  "E501",
+  "E731",
+]
+select = [
+  "F", # Pyflakes
+  "E", # Pycodestyle
+  "W",
+  "I", # isort
+  "UP", # Pyupgrade
+]
+exclude = [".eggs", "doc"]
+target-version = "py39"
+
+[tool.ruff.isort]
+known-first-party = ["fastscape"]

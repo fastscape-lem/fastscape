@@ -1,11 +1,9 @@
 Fastscape
 =========
 
-|Doc Status| |Zenodo|
+|Build Status| |Doc Status| |Zenodo|
 
 A fast, versatile and user-friendly landscape evolution model.
-
-**Note: this project is currently under heavy development.**
 
 Fastscape is a Python package that provides a lot a small model
 components (i.e., processes) to use with the xarray-simlab_ modeling
@@ -15,6 +13,9 @@ to create custom Landscape Evolution Models (LEMs).
 Routines from the fastscapelib_ library are used for fast model
 execution.
 
+.. |Build Status| image:: https://github.com/fastscape-lem/fastscape/actions/workflows/tests.yml/badge.svg?branch=master
+   :target: https://github.com/fastscape-lem/fastscape/actions/workflows/tests.yml
+   :alt: Build Status
 .. |Doc Status| image:: https://readthedocs.org/projects/fastscape/badge/?version=latest
    :target: https://fastscape.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status

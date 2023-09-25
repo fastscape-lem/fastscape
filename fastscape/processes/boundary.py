@@ -29,26 +29,20 @@ class BorderBoundary:
     fastscapelib-fortran which will be solved in a next release).
 
     """
+
     status = xs.variable(
-        dims=[(), 'border'],
+        dims=[(), "border"],
         default="fixed_value",
-        description='node status at borders',
-        static=True
+        description="node status at borders",
+        static=True,
     )
 
-    border = xs.index(
-        dims='border', description='4-border boundaries coordinate'
-    )
+    border = xs.index(dims="border", description="4-border boundaries coordinate")
     border_status = xs.variable(
-        dims='border',
-        intent='out',
-        description='node status at the 4-border boundaries'
+        dims="border", intent="out", description="node status at the 4-border boundaries"
     )
 
-    ibc = xs.variable(
-        intent='out',
-        description='boundary code used by fastscapelib-fortran'
-    )
+    ibc = xs.variable(intent="out", description="boundary code used by fastscapelib-fortran")
 
     @status.validator
     def _check_status(self, attribute, value):
@@ -77,7 +71,7 @@ class BorderBoundary:
             raise ValueError(f"Periodic boundary conditions must be symmetric, found {bs}")
 
     def initialize(self):
-        self.border = np.array(['left', 'right', 'top', 'bottom'])
+        self.border = np.array(["left", "right", "top", "bottom"])
 
         bstatus = np.array(np.broadcast_to(self.status, 4))
 
@@ -87,19 +81,18 @@ class BorderBoundary:
             "are used due to current behavior in fastscapelib-fortran"
         )
 
-        if (bstatus[0] == "core" and bstatus[1] == "core"):
+        if bstatus[0] == "core" and bstatus[1] == "core":
             w_msg = "Left and right " + w_msg_common
             warnings.warn(w_msg, UserWarning)
 
-        if (bstatus[2] == "core" and bstatus[3] == "core"):
+        if bstatus[2] == "core" and bstatus[3] == "core":
             w_msg = "Top and bottom " + w_msg_common
             warnings.warn(w_msg, UserWarning)
 
         self.border_status = bstatus
 
         # convert to fastscapelib-fortran ibc code
-        arr_bc = np.array([1 if st == 'fixed_value' else 0
-                           for st in self.border_status])
+        arr_bc = np.array([1 if st == "fixed_value" else 0 for st in self.border_status])
 
         # different border order
         self.ibc = sum(arr_bc * np.array([1, 100, 1000, 10]))

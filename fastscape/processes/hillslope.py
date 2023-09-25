@@ -12,18 +12,13 @@ class LinearDiffusion:
     """Hillslope erosion by diffusion."""
 
     diffusivity = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='diffusivity (transport coefficient)'
+        dims=[(), ("y", "x")], description="diffusivity (transport coefficient)"
     )
-    erosion = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        groups='erosion'
-    )
+    erosion = xs.variable(dims=("y", "x"), intent="out", groups="erosion")
 
-    shape = xs.foreign(UniformRectilinearGrid2D, 'shape')
-    elevation = xs.foreign(SurfaceToErode, 'elevation')
-    fs_context = xs.foreign(FastscapelibContext, 'context')
+    shape = xs.foreign(UniformRectilinearGrid2D, "shape")
+    elevation = xs.foreign(SurfaceToErode, "elevation")
+    fs_context = xs.foreign(FastscapelibContext, "context")
 
     def run_step(self):
         kd = np.broadcast_to(self.diffusivity, self.shape).flatten()
@@ -31,7 +26,7 @@ class LinearDiffusion:
 
         # we don't use the kdsed fastscapelib-fortran feature directly
         # see class DifferentialLinearDiffusion
-        self.fs_context["kdsed"] = -1.
+        self.fs_context["kdsed"] = -1.0
 
         # bypass fastscapelib-fortran global state
         self.fs_context["h"] = self.elevation.flatten()
@@ -50,26 +45,17 @@ class DifferentialLinearDiffusion(LinearDiffusion):
     is bare rock or covered by a soil (sediment) layer.
 
     """
-    diffusivity_bedrock = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='bedrock diffusivity'
-    )
-    diffusivity_soil = xs.variable(
-        dims=[(), ('y', 'x')],
-        description='soil (sediment) diffusivity'
-    )
 
-    diffusivity = xs.variable(
-        dims=('y', 'x'),
-        intent='out',
-        description='differential diffusivity'
-    )
+    diffusivity_bedrock = xs.variable(dims=[(), ("y", "x")], description="bedrock diffusivity")
+    diffusivity_soil = xs.variable(dims=[(), ("y", "x")], description="soil (sediment) diffusivity")
 
-    soil_thickness = xs.foreign(UniformSedimentLayer, 'thickness')
+    diffusivity = xs.variable(dims=("y", "x"), intent="out", description="differential diffusivity")
+
+    soil_thickness = xs.foreign(UniformSedimentLayer, "thickness")
 
     def run_step(self):
-        self.diffusivity = np.where(self.soil_thickness <= 0.,
-                                    self.diffusivity_bedrock,
-                                    self.diffusivity_soil)
+        self.diffusivity = np.where(
+            self.soil_thickness <= 0.0, self.diffusivity_bedrock, self.diffusivity_soil
+        )
 
-        super(DifferentialLinearDiffusion, self).run_step()
+        super().run_step()
