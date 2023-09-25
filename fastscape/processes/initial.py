@@ -56,7 +56,7 @@ class Escarpment:
     elevation = xs.foreign(SurfaceTopography, "elevation", intent="out")
 
     def initialize(self):
-        self.elevation = np.full(self.shape, self.elevation_left)
+        self.elevation = np.full(self.shape, self.elevation_left, dtype=np.double)
 
         # align scarp limit locations
         idx_left = np.argmax(self.x > self.x_left)
