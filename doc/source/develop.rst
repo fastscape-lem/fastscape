@@ -114,9 +114,7 @@ request).
 Python versions
 ~~~~~~~~~~~~~~~
 
-fastscape supports Python versions 3.4 and higher. It is not
-compatible with Python versions 2.x. We don't plan to make it
-compatible with Python 2.7.x.
+Fastscape supports Python versions 3.9 and higher.
 
 Test
 ~~~~
